@@ -1,0 +1,70 @@
+$LEXERNAME = "CLexer"
+$TABLENAME = "CLexerTable"
+$HEADEROUT = "lexer.h"
+$SOURCEOUT = "lexer.cpp"
+
+whitespace = %[ \t]+%
+escape = %\\(.|\n)%
+identifier = %[a-zA-Z][0-9a-zA-Z]*%
+comment = %("//".*)%
+string = %\"([^"\\]|{escape})*\"%
+notspecial = %[^\[\]\-\^\\]%
+classchar = %{notspecial}|{escape}%
+
+#STATE = "stStart"
+	ON %\n%										{this->OnEOL();}
+	ON %{comment}|{whitespace}%					{}
+	ON %"/*"%									{setState(Table::stComment);}
+	ON %\%%										{setState(Table::stRegexp);this->m_parser.step(Token::CreateToken_VOID<CParserTable::tBeginRegexp>());}
+	ON %"#STATE"%								{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tState>());}
+	ON %${identifier}%							{this->m_parser.step(Token::CreateToken<CParserTable::tVariableName>(lexeme));}
+	ON %ON%										{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tOn>());}
+	ON %"eof"%									{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tEOF>());}
+	ON %{identifier}%							{this->m_parser.step(Token::CreateToken<CParserTable::tIdentifier>(lexeme));}
+	ON %{string}%								{this->m_parser.step(Token::CreateToken<CParserTable::tLiteral>(lexeme));}
+	ON %=%										{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tAssign>());}
+	ON %"{"%									{this->m_nBraces = 1; setState(Table::stResponse);this->m_response = lexeme;}
+	ON %.%										{this->unexpectedChar(lexeme[0]);}
+	ON eof										{this->m_parser.step(Token::CreateToken_VOID<CParserTable::$>());}
+#STATE = "stRegexp"
+	ON %\%%										{setState(Table::stStart);this->m_parser.step(Token::CreateToken_VOID<CParserTable::tFinishedRegexp>());}
+	ON %\[\^?({classchar}(\-{classchar})?)+\]%	{this->m_parser.step(Token::CreateToken<CParserTable::tRegexp>(this->rCharClass(lexeme)));}
+	ON %{string}%								{this->m_parser.step(Token::CreateToken<CParserTable::tRegexp>(this->rString(lexeme)));}
+	ON %{escape}%								{this->m_parser.step(Token::CreateToken<CParserTable::tRegexp>(this->rEscape(lexeme)));}
+	ON %\?%										{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tQMark>());}
+	ON %\*%										{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tStar>());}
+	ON %\+%										{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tPlus>());}
+	ON %\|%										{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tOr>());}
+	ON %\.%										{this->m_parser.step(Token::CreateToken<CParserTable::tRegexp>(this->rDot()));}
+	ON %\{%										{setState(Table::stDef);}
+	ON %\n%										{this->regexpEOL();}
+	ON %\(%										{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tOpen>());}
+	ON %\)%										{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tClose>());}
+	ON %.%										{this->m_parser.step(Token::CreateToken<CParserTable::tRegexp>(this->rChar(lexeme[0])));}
+	ON eof										{this->regexpEOF();}
+#STATE = "stComment"
+	ON %"*/"%									{setState(Table::stStart);}
+	ON %.%										{}
+	ON %\n%										{this->commentEOL();}
+	ON eof										{this->commentEOF();}
+#STATE = "stDef"
+	ON %{identifier}"}"%						{setState(Table::stRegexp); this->m_parser.step(Token::CreateToken<CParserTable::tRegexp>(this->rDef(lexeme)));}
+	ON %{identifier}%							{setState(Table::stRegexp); this->m_parser.step(Token::CreateToken<CParserTable::tRegexp>(this->rDefUnterm(lexeme)));}
+	ON %\n%										{this->defEOL();}
+	ON %.%										{this->defBadChar(lexeme[0]);}
+	ON eof										{this->defEOF();}
+#STATE = "stResponse"
+	ON %\}%										{
+													this->m_response.append(lexeme);
+													this->m_nBraces--;
+													assert(this->m_nBraces >=0);
+													if(this->m_nBraces == 0)
+													{
+														setState(Table::stStart);
+														this->m_parser.step(Token::CreateToken<CParserTable::tResponse>(this->m_response));
+													}
+												}
+	ON %\{%										{this->m_nBraces++; this->m_response.append(lexeme);}
+	ON %\n%										{this->respEOL();this->m_response.append(lexeme);}
+	ON %[^\{\}\n]*%								{this->m_response.append(lexeme);}
+	ON eof										{this->respEOF();}

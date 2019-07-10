@@ -1,0 +1,68 @@
+$TABLENAME = "CLexerTable"
+$LEXERNAME = "CLexer"
+$SOURCEOUT = "lexer.cpp"
+$HEADEROUT = "lexer.h"
+
+
+whitespace = %[\t ]+%
+escape = %\\(.|\n)%
+identifier = %[a-zA-Z][a-zA-Z0-9_]*%
+string = %\"([^"\\]|{escape})*\"%
+
+#STATE = "stStart"
+	ON %{whitespace}%	{}
+	ON %"/*"%			{setState(Table::stComment);}
+	ON %\n%				{this->EOL();}
+	ON %=%			{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tAssign>());}
+	ON %;%			{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tSemicolon>());}
+	ON %<%			{setState(Table::stType); this->m_nDepth = 1; this->m_string = "";}
+	ON %->%			{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tProduction>());}
+	ON %,%			{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tComma>());}
+	ON %token%		{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tToken>());}
+	ON %left%		{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tLeft>());}
+	ON %right%		{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tRight>());}
+	ON %noassoc%	{this->m_parser.step(Token::CreateToken_VOID<CParserTable::tNone>());}
+	ON %\${identifier}%	{this->m_parser.step(Token::CreateToken<CParserTable::tVariableName>(lexeme));}
+	ON %{string}%	{this->m_parser.step(Token::CreateToken<CParserTable::tLiteral>(lexeme));}
+	ON %\{%			{setState(Table::stResponse); this->m_nDepth = 1; this->m_string = lexeme;}
+	ON %{identifier}%	{this->m_parser.step(Token::CreateToken<CParserTable::tIdentifier>(lexeme));}
+	ON %.%			{this->unrecognized(lexeme);}
+	ON eof			{this->m_parser.step(Token::CreateToken_VOID<CParserTable::$>());}
+#STATE = "stType"
+	ON %>%			{
+						this->m_nDepth--;
+						if(this->m_nDepth == 0)
+						{
+							setState(Table::stStart);
+							this->m_parser.step(Token::CreateToken<CParserTable::tTokenType>(this->m_string));
+						}
+						else
+						{
+							this->m_string.append(lexeme);
+						}
+					}
+	ON %<%			{this->m_string.append(lexeme); this->m_nDepth++;}
+	ON %{string}%	{this->m_string.append(lexeme);}
+	ON %.%			{this->m_string.append(lexeme);}
+	ON %\n%			{this->typeEOL(); this->m_string.append(lexeme);}
+	ON eof			{this->typeEOF(); this->m_parser.step(Token::CreateToken_VOID<CParserTable::$>());}
+#STATE = "stResponse"
+	ON %}%			{
+						this->m_string.append(lexeme);
+						this->m_nDepth--;
+						if(this->m_nDepth == 0)
+						{
+							setState(Table::stStart);
+							this->m_parser.step(Token::CreateToken<CParserTable::tResponse>(this->m_string));
+						}
+					}
+	ON %\{%			{this->m_string.append(lexeme); this->m_nDepth++;}
+	ON %{string}%	{this->m_string.append(lexeme);}
+	ON %.%			{this->m_string.append(lexeme);}
+	ON %\n%			{this->respEOL(); this->m_string.append(lexeme);}
+	ON eof			{this->respEOF(); this->m_parser.step(Token::CreateToken_VOID<CParserTable::$>());}
+#STATE = "stComment"
+	ON %"*/"%		{setState(Table::stStart);}
+	ON %.%			{}
+	ON %\n%			{this->commentEOL();}
+	ON eof			{this->commentEOF();}

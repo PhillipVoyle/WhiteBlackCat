@@ -1,0 +1,42 @@
+$PARSERNAME = "CParser";
+$TABLENAME = "CParserTable";
+$PARSERHEADER = "parser.h";
+$TABLEHEADER = "parserTable.h";
+$TABLESOURCE = "parserTable.cpp";
+
+token<void>
+	tAssign, tSemicolon, tColon, tToken, tLeft, tRight, tNone,
+	tProduction, tTokens, tRules, tComma;
+token<std::string>
+	tTokenType, tVariableName, tLiteral, tResponse, tIdentifier;
+token<void>
+	program, ntVariables, ntTokenDefs, ntAssignVariable, ntRules, ntRuleList, ntRule,
+	ntTokenDef, ntTokenType, ntTokenNames, ntTokenNameList
+	;
+
+token<syntax_string_list_t> ntRightSide;
+
+program	-> ntVariables ntTokenDefs ntRules {}
+ntVariables -> ntVariables ntAssignVariable tSemicolon {}
+ntVariables -> {}
+ntAssignVariable -> tVariableName tAssign tLiteral {this->assignVariable($1, $3);}
+ntTokenDefs -> ntTokenDef ntTokenDefs	{}
+ntTokenDefs -> {}
+			
+ntTokenDef	-> ntTokenType ntTokenNames {}
+ntTokenType -> tToken tTokenType {this->setTokenType($2);}
+ntTokenNames -> ntTokenNameList	tSemicolon {}
+ntTokenNames -> tSemicolon		{}
+ntTokenNameList -> tIdentifier {this->addToken($1);}
+ntTokenNameList -> ntTokenNameList tComma tIdentifier {this->addToken($3);}
+			
+ntRules -> ntRule ntRules {}
+ntRules -> {}
+
+ntRule -> tIdentifier tProduction ntRightSide tResponse {this->addRule($1, $3, $4);}
+ntRule -> tLeft									{this->setAssocLeft();}
+ntRule -> tRight								{this->setAssocRight();}
+ntRule -> tNone									{this->setAssocNone();}
+
+ntRightSide -> tIdentifier ntRightSide	{$$ = this->addSyntaxStringToList($1, $2);}
+ntRightSide -> 							{$$ = this->syntaxStringList();}
