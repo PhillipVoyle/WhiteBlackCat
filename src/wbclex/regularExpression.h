@@ -17,7 +17,7 @@ public:
 	char m_c;
 	unsigned m_endID;
 	CRegularExpression(){m_typeID = errorNode;}
-	bool m_bNullable;
+	bool m_bnullptrable;
 	int m_positionID;
 	std::vector<int> m_firstPos;
 	std::vector<int> m_lastPos;
@@ -61,7 +61,7 @@ public:
 	}
 	static ExpressionPtr CreatePlusNode(ExpressionPtr& a)
 	{
-		if(a.get() == NULL)
+		if(a.get() == nullptr)
 		{
 			return ExpressionPtr();
 		}
@@ -74,7 +74,7 @@ public:
 	}
 	static ExpressionPtr CreateQMarkNode(ExpressionPtr& a)
 	{
-		if(a.get() == NULL)
+		if(a.get() == nullptr)
 		{
 			return ExpressionPtr();
 		}
@@ -89,8 +89,8 @@ public:
 	void SetID(int positionID){m_positionID = positionID;}
 	int GetID(){return m_positionID;}
 
-	void SetNullable(bool bNullable) {m_bNullable = bNullable;}
-	bool GetNullable() {return m_bNullable;}
+	void Setnullptrable(bool bnullptrable) {m_bnullptrable = bnullptrable;}
+	bool Getnullptrable() {return m_bnullptrable;}
 
 	void SetFirstPos(const std::vector<int>& firstPos)
 	{
@@ -116,11 +116,11 @@ public:
 	{
 		ExpressionPtr newExp(new CRegularExpression());
 		newExp->m_typeID = m_typeID;
-		if(GetA() != NULL)
+		if(GetA() != nullptr)
 		{
 			newExp->m_a = m_a->clone();
 		}
-		if(GetB() != NULL)
+		if(GetB() != nullptr)
 		{
 			newExp->m_b = m_b->clone();
 		}

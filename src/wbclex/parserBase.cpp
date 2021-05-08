@@ -6,7 +6,7 @@
 
 CParserBase::CParserBase()
 {
-	m_errorHandler = NULL;
+	m_errorHandler = nullptr;
 	m_state = "\"stStart\"";
 }
 
@@ -153,11 +153,11 @@ void CParserBase::assignVar(const std::string& varName, const std::string& varVa
 
 regularExpressionPtr CParserBase::regCat(regularExpressionPtr r1, regularExpressionPtr r2)
 {
-	if(r1.get() == NULL)
+	if(r1.get() == nullptr)
 	{
 		return r2;
 	}
-	if(r2.get() == NULL)
+	if(r2.get() == nullptr)
 	{
 		return r1;
 	}

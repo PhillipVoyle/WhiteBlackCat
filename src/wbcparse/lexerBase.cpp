@@ -5,7 +5,7 @@
 
 CLexerBase::CLexerBase()
 {
-	m_errorHandler = NULL;
+	m_errorHandler = nullptr;
 }
 
 void CLexerBase::SetErrorHandler(CErrorHandler* errorHandler)

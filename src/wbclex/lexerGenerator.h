@@ -80,8 +80,8 @@ class CLexerGenerator
 	void ComputeFollowPos(CRegularExpression* exp, std::vector<PositionSet>& followPos);
 	void ComputeStates(std::vector<PositionSet> followPos, CRegularExpression* exp, std::vector<StateData>& stateData);
 	void GetDataAtPositions(CRegularExpression *exp, std::vector<nodeData>& dataAtPosition, std::vector<char> &symbols);
-	bool GetNullable(CRegularExpression* exp);
-	bool SetNullable(CRegularExpression* exp);
+	bool Getnullptrable(CRegularExpression* exp);
+	bool Setnullptrable(CRegularExpression* exp);
 	static void UMerge(std::vector<int>& a, const std::vector<int>& b);
 	static std::string DecipherString(const std::string& s);
 	bool ReadVariable(const std::string& vName, std::string& vValue);

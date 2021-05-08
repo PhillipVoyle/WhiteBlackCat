@@ -16,7 +16,7 @@ CLALRGenerator::CLALRGenerator()
 	m_bError = false;
 	setType("$", "void", "void");
 	setType("S'","void", "void");
-	m_errorHandler = NULL;
+	m_errorHandler = nullptr;
 }
 
 CLALRGenerator::~CLALRGenerator()
@@ -95,7 +95,7 @@ bool CLALRGenerator::ReadVariable(const std::string& vName, std::string& vValue)
 
 void CLALRGenerator::GenerateParser(std::shared_ptr<IProductions> &parseTree)
 {
-	if(parseTree.get() != NULL && !m_bError)
+	if(parseTree.get() != nullptr && !m_bError)
 	{
 		std::string firstNonTerminal = parseTree->GetProduction()->GetLeft()->GetName();
 		ITokenList* rule = parseTree->GetProduction()->GetRight();
@@ -127,7 +127,7 @@ void CLALRGenerator::GenerateParser(std::shared_ptr<IProductions> &parseTree)
 		{
 			DumpParseTables();
 		}
-		m_grammar = NULL;
+		m_grammar = nullptr;
 	}
 }
 
@@ -135,7 +135,7 @@ void CLALRGenerator::ProcessSymbols()
 {
 	//first production is the augmented one anyhow
 	IProductions* list = m_grammar->GetProductions();
-	while(list != NULL)
+	while(list != nullptr)
 	{
 		IProduction* production = list->GetProduction();
 		const std::string& nonterminal = production->GetLeft()->GetName();
@@ -157,7 +157,7 @@ void CLALRGenerator::ProcessSymbols()
 
 	list = m_grammar;
 	int nProductions = 0;
-	while(list != NULL)
+	while(list != nullptr)
 	{
 		IProduction* production = list->GetProduction();
 
@@ -165,7 +165,7 @@ void CLALRGenerator::ProcessSymbols()
 		ITokenList* tokenList = production->GetRight();
 		production->SetID(nProductions);
 		nProductions++;
-		while(tokenList != NULL)
+		while(tokenList != nullptr)
 		{
 			const std::string& token = tokenList->GetToken()->GetName();
 
@@ -226,7 +226,7 @@ CLALRGenerator::LR1State CLALRGenerator::LR1Closure(const LR1State& I)
 		unmarked.pop_front();
 		LR0ItemID LR0itemID = LR1item.first;
 		const LR0Item& LR0item = m_LR0Items[LR0itemID];
-		if(LR0item.second == NULL)
+		if(LR0item.second == nullptr)
 		{
 			continue;
 		}
@@ -235,7 +235,7 @@ CLALRGenerator::LR1State CLALRGenerator::LR1Closure(const LR1State& I)
 			NonterminalID nonterminalId = LR0item.second->GetToken()->GetID();
 			std::set<TerminalID> first = First(LR0item.second->GetTokenList(), LR1item.second);
 			IProductions* list = m_grammar;
-			while(list != NULL)
+			while(list != nullptr)
 			{
 				IProduction* production = list->GetProduction();
 				if(production->GetLeft()->GetID() == nonterminalId)
@@ -276,14 +276,14 @@ CLALRGenerator::LR0State CLALRGenerator::LR0Closure(const LR0State &I)
 		{
 			LR0ItemID itemID = *it;
 			LR0Item item = m_LR0Items[itemID];
-			if(item.second != NULL)
+			if(item.second != nullptr)
 			{
 				const std::string& token = item.second->GetToken()->GetName();
 				IProductions* list = m_grammar->GetProductions();
-				while(list != NULL)
+				while(list != nullptr)
 				{
 					IProduction* production = list->GetProduction();
-					if(production != NULL && production->GetLeft()->GetName() == token)
+					if(production != nullptr && production->GetLeft()->GetName() == token)
 					{
 						LR0Item nextItem;
 						nextItem.first = production;
@@ -309,14 +309,14 @@ CLALRGenerator::LR0State CLALRGenerator::LR0Closure(const LR0State &I)
 		LR0ItemID itemID = unmarked.front();
 		unmarked.pop_front();
 		LR0Item item = m_LR0Items[itemID];
-		if(item.second != NULL)
+		if(item.second != nullptr)
 		{
 			const std::string& token = item.second->GetToken()->GetName();
 			IProductions* list = m_grammar->GetProductions();
-			while(list != NULL)
+			while(list != nullptr)
 			{
 				IProduction* production = list->GetProduction();
-				if(production != NULL && production->GetLeft()->GetName() == token)
+				if(production != nullptr && production->GetLeft()->GetName() == token)
 				{
 					LR0Item nextItem;
 					nextItem.first = production;
@@ -381,7 +381,7 @@ CLALRGenerator::LR0StateID CLALRGenerator::GetLR0Goto(LR0StateID id, const std::
 	for(it = m_LR0States[id].state.begin(); it != m_LR0States[id].state.end(); it++)
 	{
 		const LR0Item& item = m_LR0Items[*it];
-		if(item.second != NULL)
+		if(item.second != nullptr)
 		{
 			if(token == item.second->GetToken()->GetName())
 			{
@@ -424,7 +424,7 @@ void CLALRGenerator::GenerateLR0Items()
 		for(it = m_LR0States[idI].state.begin(); it != m_LR0States[idI].state.end(); it++)
 		{
 			const LR0Item item = m_LR0Items[*it];
-			if(item.second != NULL)
+			if(item.second != nullptr)
 			{
 				ITokenList* tokens = item.second;
 				LR0Item newItem;
@@ -487,7 +487,7 @@ void CLALRGenerator::PrintLR0Item(LR0ItemID itemID)
 		{
 			std::cout << " .";
 		}
-		if(list == NULL)
+		if(list == nullptr)
 		{
 			break;
 		}
@@ -584,11 +584,11 @@ void CLALRGenerator::ConvertLR0ItemsToKernels()
 void CLALRGenerator::ComputeFirstSets()
 {
 	IProductions* list = m_grammar;
-	while(list != NULL)
+	while(list != nullptr)
 	{
 		IProduction* production = list->GetProduction();
 		NonterminalID sourceID = production->GetLeft()->GetID();
-		if(production->GetRight() == NULL)
+		if(production->GetRight() == nullptr)
 		{
 			m_firstSets[sourceID].insert(LookAheadID);
 		}
@@ -600,12 +600,12 @@ void CLALRGenerator::ComputeFirstSets()
 	{
 		list = m_grammar;
 		bDidSomething = false;
-		while(list != NULL)
+		while(list != nullptr)
 		{
 			IProduction* production = list->GetProduction();
 			NonterminalID sourceID = production->GetLeft()->GetID();
 			ITokenList* tokens = production->GetRight();
-			while(tokens != NULL)
+			while(tokens != nullptr)
 			{
 				unsigned tokenID = tokens->GetToken()->GetID();
 				if(tokens->GetIsTerminal())
@@ -648,7 +648,7 @@ std::set<CLALRGenerator::TerminalID> CLALRGenerator::First(ITokenList* list, Ter
 {
 	std::set<TerminalID> first;
 	ITokenList* tokens = list;
-	while(tokens != NULL)
+	while(tokens != nullptr)
 	{
 		unsigned tokenID = tokens->GetToken()->GetID();
 		if(tokens->GetIsTerminal())
@@ -758,7 +758,7 @@ void CLALRGenerator::InitLALRTables()
 				const LR0ItemID itemID = jpIt->first;
 				const LR0Item& item = m_LR0Items[itemID];
         //todo: I'm not sure if this is right?
-				if(item.second == NULL)
+				if(item.second == nullptr)
 				{
 					const std::set<TerminalID>& terminals = jpIt->second;
 					std::set<TerminalID>::const_iterator itTerminal;
@@ -947,7 +947,7 @@ void CLALRGenerator::GenerateActions()
 		const std::pair<LR0StateID, LR0ItemID> index = it->first;
 		LR0Item item = m_LR0Items[index.second];
 		unsigned stateID = index.first;
-		if(item.second == NULL)
+		if(item.second == nullptr)
 		{
 			int reductionID = item.first->GetID();
 			const std::set<TerminalID>& terminals = it->second;
@@ -1111,7 +1111,7 @@ void CLALRGenerator::CheckActions()
 							str << production->GetLeft()->GetName() << " ->";
 							for(;;)
 							{
-								if(list == NULL)
+								if(list == nullptr)
 								{
 									break;
 								}
@@ -1148,7 +1148,7 @@ void CLALRGenerator::CheckActions()
 					{
 						std::cerr << " .";
 					}
-					if(list == NULL)
+					if(list == nullptr)
 					{
 						break;
 					}
@@ -1442,7 +1442,7 @@ void CLALRGenerator::DumpParseTables()
   
 	IProductions* productions = m_grammar;
 	int nProductionID = 0;
-	while(productions != NULL)
+	while(productions != nullptr)
 	{
 		IProduction* production = productions->GetProduction();
 		fParserHeader << "      case " << nProductionID << ":\n";
@@ -1470,7 +1470,7 @@ void CLALRGenerator::DumpParseTables()
 		else
 		{
 			std::vector<IToken*> tokenVec;
-			while(tokens != NULL)
+			while(tokens != nullptr)
 			{
 				tokenVec.push_back(tokens->GetToken());
 				tokens = tokens->GetTokenList();

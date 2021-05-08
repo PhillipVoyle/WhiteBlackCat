@@ -7,10 +7,10 @@
 
 CParserBase::CParserBase()
 {
-	m_nextProductions = NULL;
+	m_nextProductions = nullptr;
 	m_associativity = IProduction::asNone;
 	m_precedence = 0;
-	m_errorHandler = NULL;
+	m_errorHandler = nullptr;
 }
 
 void CParserBase::SetErrorHandler(CErrorHandler* errorHandler)
@@ -61,7 +61,7 @@ void CParserBase::addRule(const std::string& left, syntax_string_list_t& right, 
 	std::shared_ptr<IProductions> productions = IProductions::Create(production, _empty);
 	IProductions* ptr = productions.get();
 
-	if(m_productions.get() == NULL)
+	if(m_productions.get() == nullptr)
 	{
 		m_productions = productions;
 	}

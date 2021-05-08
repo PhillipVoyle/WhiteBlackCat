@@ -119,7 +119,7 @@ regularExpressionPtr CLexerBase::rCharClass(const std::string& sText)
 		{
 			char c = (char) nChar;
 			regularExpressionPtr rc = rChar(c);
-			if(regexp.get() == NULL)
+			if(regexp.get() == nullptr)
 			{
 				regexp = rc;
 			}
@@ -156,7 +156,7 @@ regularExpressionPtr CLexerBase::rDot()
 		if(c != '\n')
 		{
 			regularExpressionPtr rc = rChar(c);
-			if(regexp.get() == NULL)
+			if(regexp.get() == nullptr)
 			{
 				regexp = rc;
 			}
@@ -189,7 +189,7 @@ regularExpressionPtr CLexerBase::rString(const std::string& stext)
 			c = Utils::EscapeChar(c);
 		}
 		regularExpressionPtr rc = rChar(c);
-		if(regexp.get() == NULL)
+		if(regexp.get() == nullptr)
 		{
 			regexp = rc;
 		}

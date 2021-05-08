@@ -11,7 +11,7 @@ const CLexerGenerator::PositionSet CLexerGenerator::kEmptyPositionSet;
 
 CLexerGenerator::CLexerGenerator()
 {
-	m_errorHandler = NULL;
+	m_errorHandler = nullptr;
 }
 
 void CLexerGenerator::setErrorHandler(CErrorHandler *errorHandler)
@@ -32,7 +32,7 @@ void CLexerGenerator::addEOFEvent(const std::string& state, int response)
 
 void CLexerGenerator::addEvent(const std::string & state, regularExpressionPtr& ptr)
 {
-	if(m_regularExpressions[state].m_ptr.get() == NULL)
+	if(m_regularExpressions[state].m_ptr.get() == nullptr)
 	{
 		m_regularExpressions[state].m_ptr = ptr;
 	}
@@ -62,7 +62,7 @@ int CLexerGenerator::registerResponse(const std::string& response)
 
 int CLexerGenerator::AssignPositionIDs(CRegularExpression* exp, int id)
 {
-	if(exp != NULL)
+	if(exp != nullptr)
 	{
 		exp->SetID(-1);
 		switch(exp->GetTypeID())
@@ -86,57 +86,57 @@ int CLexerGenerator::AssignPositionIDs(CRegularExpression* exp, int id)
 	return id;
 }
 
-bool CLexerGenerator::GetNullable(CRegularExpression* exp)
+bool CLexerGenerator::Getnullptrable(CRegularExpression* exp)
 {
-	if(exp == NULL)
+	if(exp == nullptr)
 	{
 		return true;
 	}
-	return exp->GetNullable();
+	return exp->Getnullptrable();
 }
 
-bool CLexerGenerator::SetNullable(CRegularExpression* exp)
+bool CLexerGenerator::Setnullptrable(CRegularExpression* exp)
 {
-	if(exp == NULL)
+	if(exp == nullptr)
 	{
 		return true;
 	}
 
-	bool bNullable = true;
+	bool bnullptrable = true;
 	switch(exp->GetTypeID())
 	{
 	case CRegularExpression::starNode:
-		SetNullable(exp->GetA());
-		bNullable = true;
+		Setnullptrable(exp->GetA());
+		bnullptrable = true;
 		break;
 	case CRegularExpression::orNode:
 		{
-			bool bA = SetNullable(exp->GetA());
-			bool bB = SetNullable(exp->GetB());
-			bNullable = bA || bB;
+			bool bA = Setnullptrable(exp->GetA());
+			bool bB = Setnullptrable(exp->GetB());
+			bnullptrable = bA || bB;
 		}
 		break;
 	case CRegularExpression::catNode:
 		{
-			bool bA = SetNullable(exp->GetA());
-			bool bB = SetNullable(exp->GetB());
-			bNullable = bA && bB;
+			bool bA = Setnullptrable(exp->GetA());
+			bool bB = Setnullptrable(exp->GetB());
+			bnullptrable = bA && bB;
 		}
 		break;
 	case CRegularExpression::charNode:
 	case CRegularExpression::endNode:
-		bNullable = false;
+		bnullptrable = false;
 		break;
   default:
     break;
 	}
-	exp->SetNullable(bNullable);
-	return bNullable;
+	exp->Setnullptrable(bnullptrable);
+	return bnullptrable;
 }
 
 void CLexerGenerator::ComputeFollowPos(CRegularExpression* exp, std::vector<PositionSet>& followPos)
 {
-	if(exp == NULL)
+	if(exp == nullptr)
 	{
 		return;
 	}
@@ -210,9 +210,9 @@ void CLexerGenerator::ComputeFollowPos(CRegularExpression* exp, std::vector<Posi
 				lpB = &exp->GetB()->GetLastPos();
 			}
 
-			const PositionSet *uf = NULL;
+			const PositionSet *uf = nullptr;
 			PositionSet ufHandle;
-			if(GetNullable(exp->GetA()))
+			if(Getnullptrable(exp->GetA()))
 			{
 				std::set_union(fpA->begin(), fpA->end(), fpB->begin(), fpB->end(), std::back_insert_iterator<PositionSet>(ufHandle));
 				uf = &ufHandle;
@@ -223,9 +223,9 @@ void CLexerGenerator::ComputeFollowPos(CRegularExpression* exp, std::vector<Posi
 			}
 			exp->SetFirstPos(*uf);
 			
-			const PositionSet *ul = NULL;
+			const PositionSet *ul = nullptr;
 			PositionSet ulHandle;
-			if(GetNullable(exp->GetB()))
+			if(Getnullptrable(exp->GetB()))
 			{
 				std::set_union(lpA->begin(), lpA->end(), lpB->begin(), lpB->end(), std::back_insert_iterator<PositionSet>(ulHandle));
 				ul = &ulHandle;
@@ -260,7 +260,7 @@ void CLexerGenerator::ComputeFollowPos(CRegularExpression* exp, std::vector<Posi
 
 void CLexerGenerator::GetDataAtPositions(CRegularExpression *exp, std::vector<nodeData>& dataAtPosition, std::vector<char> &symbols)
 {
-	if(exp == NULL)
+	if(exp == nullptr)
 		return;
 
 	switch(exp->GetTypeID())
@@ -453,7 +453,7 @@ void CLexerGenerator::Process()
 		std::string sname = it->first;
 		CRegularExpression* exp = it->second.m_ptr.get();
 		int nIDs = AssignPositionIDs(exp, 0);
-		SetNullable(exp);
+		Setnullptrable(exp);
 		std::vector<PositionSet> followPos(nIDs, PositionSet());
 		ComputeFollowPos(exp, followPos);
 		ComputeStates(followPos, exp, m_stateData[it->first]);
