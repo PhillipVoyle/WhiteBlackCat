@@ -44,14 +44,14 @@ public:
 	{
 	}
 
-	IToken* GetToken()
+	std::shared_ptr<IToken> GetToken()
 	{
-		return m_token.get();
+		return m_token;
 	}
 
-	ITokenList* GetTokenList()
+	std::shared_ptr<ITokenList> GetTokenList()
 	{
-		return m_tokenList.get();
+		return m_tokenList;
 	}
 
 	void SetIsTerminal(bool isTerminal)
@@ -90,14 +90,14 @@ public:
 		m_orderID = -1;
 	}
 
-	IToken* GetLeft()
+	std::shared_ptr<IToken> GetLeft()
 	{
-		return m_left.get();
+		return m_left;
 	}
 
-	ITokenList* GetRight()
+	std::shared_ptr<ITokenList> GetRight()
 	{
-		return m_right.get();
+		return m_right;
 	}
 
 	const std::string& GetResponse()
@@ -162,16 +162,16 @@ public:
 	{
 	}
 
-	IProduction* GetProduction()
+	std::shared_ptr<IProduction> GetProduction()
 	{
-		return m_production.get();
+		return m_production;
 	}
 
-	IProductions* GetProductions()
+	std::shared_ptr<IProductions> GetProductions()
 	{
-		return m_productions.get();
+		return m_productions;
 	}
-	void SetProductions(std::shared_ptr<IProductions>& productions)
+	void SetProductions(std::shared_ptr<IProductions> productions)
 	{
 		m_productions = productions;
 	}

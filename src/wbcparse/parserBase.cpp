@@ -59,9 +59,9 @@ void CParserBase::addRule(const std::string& left, syntax_string_list_t& right, 
 
   std::shared_ptr<IProductions> _empty;
 	std::shared_ptr<IProductions> productions = IProductions::Create(production, _empty);
-	IProductions* ptr = productions.get();
+	std::shared_ptr<IProductions> ptr = productions;
 
-	if(m_productions.get() == nullptr)
+	if(m_productions == nullptr)
 	{
 		m_productions = productions;
 	}
@@ -104,7 +104,7 @@ void CParserBase::assignVariable(const std::string& varname, const std::string& 
 void CParserBase::ParserError(TokenPtr tok)
 {
 	std::stringstream str;
-	str << "syntax error, before " << GetTokenDescription(tok.get()) << "";
+	str << "syntax error, before " << GetTokenDescription(tok) << "";
 	m_errorHandler->EmitError(str.str());
 }
 
@@ -268,7 +268,7 @@ syntax_string_list_t CParserBase::syntaxStringList()
 	return std::make_shared<std::list<std::string>>();
 }
 
-std::string CParserBase::GetTokenDescription(Token* ptr)
+std::string CParserBase::GetTokenDescription(std::shared_ptr<Token> ptr)
 {
 	CParserTable::TokenID id = ptr->GetTokenID();
 	switch(id)

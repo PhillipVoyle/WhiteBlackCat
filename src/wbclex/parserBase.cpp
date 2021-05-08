@@ -153,11 +153,11 @@ void CParserBase::assignVar(const std::string& varName, const std::string& varVa
 
 regularExpressionPtr CParserBase::regCat(regularExpressionPtr r1, regularExpressionPtr r2)
 {
-	if(r1.get() == nullptr)
+	if(r1 == nullptr)
 	{
 		return r2;
 	}
-	if(r2.get() == nullptr)
+	if(r2 == nullptr)
 	{
 		return r1;
 	}

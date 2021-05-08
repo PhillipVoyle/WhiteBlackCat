@@ -21,14 +21,14 @@ class CParserBase
 	std::string m_currentStoreType;
 	std::string m_currentTransType;
 	std::shared_ptr<IProductions> m_productions;
-	IProductions* m_nextProductions;
+	std::shared_ptr<IProductions> m_nextProductions;
 
 	int m_precedence;
 	IProduction::Associativity m_associativity;
 	CErrorHandler* m_errorHandler;
 protected:
 	CParserBase();
-	std::string GetTokenDescription(Token* ptr);
+	std::string GetTokenDescription(std::shared_ptr<Token> ptr);
 	void Accept();
 	void addRule(const std::string& left, syntax_string_list_t& right, const std::string& response);
 	syntax_string_list_t addSyntaxStringToList(const std::string& string, syntax_string_list_t list);

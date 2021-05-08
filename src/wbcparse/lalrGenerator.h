@@ -22,11 +22,11 @@ private:
 	static std::string DecipherString(const std::string& s);
 	static char EscapeChar(char c);
 
-	std::vector<IProduction*> m_productions;
+	std::vector<std::shared_ptr<IProduction>> m_productions;
 
 	bool m_bError;
 
-	IProductions* m_grammar;
+	std::shared_ptr<IProductions> m_grammar;
 
 	std::vector<std::string> m_Nonterminals;
 	std::map<std::string, NonterminalID> m_NonterminalIDs;
@@ -35,7 +35,7 @@ private:
 	std::map<std::string, TerminalID> m_TerminalIDs;
 	TerminalID m_endID;
 
-	typedef std::pair<IProduction*, ITokenList*> LR0Item;
+	typedef std::pair<std::shared_ptr<IProduction>, std::shared_ptr<ITokenList>> LR0Item;
 	typedef unsigned LR0ItemID;
 
 	std::vector<LR0Item> m_LR0Items;
@@ -54,7 +54,7 @@ private:
 
 	std::map<NonterminalID, std::set<TerminalID> > m_firstSets;
 	void ComputeFirstSets();
-	std::set<TerminalID> First(ITokenList* list, TerminalID terminal);
+	std::set<TerminalID> First(std::shared_ptr<ITokenList> list, TerminalID terminal);
 
 	std::vector<LR0State> m_LR0Kernels;
 	std::vector<LR0StateData> m_LR0States;

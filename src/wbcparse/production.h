@@ -24,8 +24,8 @@ protected:
 	ITokenList() {};
 public:
 	static std::shared_ptr<ITokenList> Create(std::shared_ptr<IToken>& token, std::shared_ptr<ITokenList>& tokenList);
-	virtual IToken* GetToken() = 0;
-	virtual ITokenList* GetTokenList() = 0;
+	virtual std::shared_ptr<IToken> GetToken() = 0;
+	virtual std::shared_ptr<ITokenList> GetTokenList() = 0;
 
 	virtual void SetIsTerminal(bool) = 0;
 	virtual bool GetIsTerminal(void) = 0;
@@ -39,8 +39,8 @@ protected:
 	IProduction() {};
 public:
 	static std::shared_ptr<IProduction> Create(std::shared_ptr<IToken> left, std::shared_ptr<ITokenList> right, const std::string& response);
-	virtual IToken* GetLeft() = 0;
-	virtual ITokenList* GetRight() = 0;
+	virtual std::shared_ptr<IToken> GetLeft() = 0;
+	virtual std::shared_ptr<ITokenList> GetRight() = 0;
 	virtual const std::string& GetResponse() = 0;
 	virtual void SetID(unsigned id) = 0;
 	virtual unsigned GetID(void) = 0;
@@ -67,7 +67,7 @@ protected:
 	IProductions() {};
 public:
 	static std::shared_ptr<IProductions> Create(std::shared_ptr<IProduction>& production, std::shared_ptr<IProductions>& productions);
-	virtual IProduction* GetProduction() = 0;
-	virtual IProductions* GetProductions() = 0;
-	virtual void SetProductions(std::shared_ptr<IProductions>& productions) = 0;
+	virtual std::shared_ptr<IProduction> GetProduction() = 0;
+	virtual std::shared_ptr<IProductions> GetProductions() = 0;
+	virtual void SetProductions(std::shared_ptr<IProductions> productions) = 0;
 };

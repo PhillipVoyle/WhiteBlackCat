@@ -61,7 +61,7 @@ public:
 	}
 	static ExpressionPtr CreatePlusNode(ExpressionPtr& a)
 	{
-		if(a.get() == nullptr)
+		if(a == nullptr)
 		{
 			return ExpressionPtr();
 		}
@@ -74,7 +74,7 @@ public:
 	}
 	static ExpressionPtr CreateQMarkNode(ExpressionPtr& a)
 	{
-		if(a.get() == nullptr)
+		if(a == nullptr)
 		{
 			return ExpressionPtr();
 		}
@@ -82,8 +82,8 @@ public:
 		return CreateOrNode(aptr, a);
 	}
 	typeID GetTypeID(){return m_typeID;}
-	CRegularExpression* GetA() {return m_a.get();}
-	CRegularExpression* GetB() {return m_b.get();}
+	std::shared_ptr<CRegularExpression> GetA() {return m_a;}
+	std::shared_ptr<CRegularExpression> GetB() {return m_b;}
 	char GetC(){return m_c;}
 	unsigned GetEnd(){return m_endID;}
 	void SetID(int positionID){m_positionID = positionID;}

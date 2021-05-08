@@ -76,12 +76,12 @@ class CLexerGenerator
 	std::map<std::string, std::string> m_vars;
 	std::vector<std::string> m_responses;
 	CErrorHandler* m_errorHandler;
-	int AssignPositionIDs(CRegularExpression* exp, int id);
-	void ComputeFollowPos(CRegularExpression* exp, std::vector<PositionSet>& followPos);
-	void ComputeStates(std::vector<PositionSet> followPos, CRegularExpression* exp, std::vector<StateData>& stateData);
-	void GetDataAtPositions(CRegularExpression *exp, std::vector<nodeData>& dataAtPosition, std::vector<char> &symbols);
-	bool Getnullptrable(CRegularExpression* exp);
-	bool Setnullptrable(CRegularExpression* exp);
+	int AssignPositionIDs(std::shared_ptr<CRegularExpression> exp, int id);
+	void ComputeFollowPos(std::shared_ptr<CRegularExpression> exp, std::vector<PositionSet>& followPos);
+	void ComputeStates(std::vector<PositionSet> followPos, std::shared_ptr<CRegularExpression> exp, std::vector<StateData>& stateData);
+	void GetDataAtPositions(std::shared_ptr<CRegularExpression>exp, std::vector<nodeData>& dataAtPosition, std::vector<char> &symbols);
+	bool Getnullptrable(std::shared_ptr<CRegularExpression> exp);
+	bool Setnullptrable(std::shared_ptr<CRegularExpression> exp);
 	static void UMerge(std::vector<int>& a, const std::vector<int>& b);
 	static std::string DecipherString(const std::string& s);
 	bool ReadVariable(const std::string& vName, std::string& vValue);

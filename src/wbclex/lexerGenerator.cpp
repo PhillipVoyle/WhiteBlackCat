@@ -32,7 +32,7 @@ void CLexerGenerator::addEOFEvent(const std::string& state, int response)
 
 void CLexerGenerator::addEvent(const std::string & state, regularExpressionPtr& ptr)
 {
-	if(m_regularExpressions[state].m_ptr.get() == nullptr)
+	if(m_regularExpressions[state].m_ptr == nullptr)
 	{
 		m_regularExpressions[state].m_ptr = ptr;
 	}
@@ -60,7 +60,7 @@ int CLexerGenerator::registerResponse(const std::string& response)
 	return id;
 }
 
-int CLexerGenerator::AssignPositionIDs(CRegularExpression* exp, int id)
+int CLexerGenerator::AssignPositionIDs(std::shared_ptr<CRegularExpression> exp, int id)
 {
 	if(exp != nullptr)
 	{
@@ -86,7 +86,7 @@ int CLexerGenerator::AssignPositionIDs(CRegularExpression* exp, int id)
 	return id;
 }
 
-bool CLexerGenerator::Getnullptrable(CRegularExpression* exp)
+bool CLexerGenerator::Getnullptrable(std::shared_ptr<CRegularExpression> exp)
 {
 	if(exp == nullptr)
 	{
@@ -95,7 +95,7 @@ bool CLexerGenerator::Getnullptrable(CRegularExpression* exp)
 	return exp->Getnullptrable();
 }
 
-bool CLexerGenerator::Setnullptrable(CRegularExpression* exp)
+bool CLexerGenerator::Setnullptrable(std::shared_ptr<CRegularExpression> exp)
 {
 	if(exp == nullptr)
 	{
@@ -134,7 +134,7 @@ bool CLexerGenerator::Setnullptrable(CRegularExpression* exp)
 	return bnullptrable;
 }
 
-void CLexerGenerator::ComputeFollowPos(CRegularExpression* exp, std::vector<PositionSet>& followPos)
+void CLexerGenerator::ComputeFollowPos(std::shared_ptr<CRegularExpression> exp, std::vector<PositionSet>& followPos)
 {
 	if(exp == nullptr)
 	{
@@ -258,7 +258,7 @@ void CLexerGenerator::ComputeFollowPos(CRegularExpression* exp, std::vector<Posi
   }
 }
 
-void CLexerGenerator::GetDataAtPositions(CRegularExpression *exp, std::vector<nodeData>& dataAtPosition, std::vector<char> &symbols)
+void CLexerGenerator::GetDataAtPositions(std::shared_ptr<CRegularExpression>exp, std::vector<nodeData>& dataAtPosition, std::vector<char> &symbols)
 {
 	if(exp == nullptr)
 		return;
@@ -302,7 +302,7 @@ void CLexerGenerator::GetDataAtPositions(CRegularExpression *exp, std::vector<no
   }
 }
 
-void CLexerGenerator::ComputeStates(std::vector<PositionSet> followPos, CRegularExpression* exp, std::vector<StateData>& stateData)
+void CLexerGenerator::ComputeStates(std::vector<PositionSet> followPos, std::shared_ptr<CRegularExpression> exp, std::vector<StateData>& stateData)
 {
 	//populate these
 	std::vector<nodeData> dataAtPosition;
@@ -451,7 +451,7 @@ void CLexerGenerator::Process()
 	for(it = m_regularExpressions.begin(); it != m_regularExpressions.end(); it++)
 	{
 		std::string sname = it->first;
-		CRegularExpression* exp = it->second.m_ptr.get();
+		std::shared_ptr<CRegularExpression> exp = it->second.m_ptr;
 		int nIDs = AssignPositionIDs(exp, 0);
 		Setnullptrable(exp);
 		std::vector<PositionSet> followPos(nIDs, PositionSet());
