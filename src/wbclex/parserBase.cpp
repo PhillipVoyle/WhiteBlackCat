@@ -23,7 +23,7 @@ CParserBase::~CParserBase()
 
 regularExpressionPtr CParserBase::GetDef(const std::string& defName)
 {
-	std::map<std::string, CAdaptPtr<CRegularExpression> >::iterator it = m_defs.find(defName);
+	std::map<std::string, std::shared_ptr<CRegularExpression>>::iterator it = m_defs.find(defName);
 	if(it == m_defs.end())
 	{
 		std::stringstream str;
@@ -33,7 +33,7 @@ regularExpressionPtr CParserBase::GetDef(const std::string& defName)
 	}
 	else
 	{
-		return it->second.m_ptr->clone();
+		return it->second->clone();
 	}
 }
 
@@ -143,7 +143,7 @@ void CParserBase::assignDef(const std::string& def, regularExpressionPtr r)
 	std::string ind("{");
 	ind.append(def);
 	ind.append("}");
-	m_defs[ind].m_ptr = r;
+	m_defs[ind] = r;
 }
 
 void CParserBase::assignVar(const std::string& varName, const std::string& varValue)

@@ -16,7 +16,7 @@ typedef std::shared_ptr<Token> TokenPtr;
 
 class CParserBase
 {
-	std::map<std::string, CAdaptPtr<CRegularExpression> > m_defs;
+	std::map<std::string, std::shared_ptr<CRegularExpression>> m_defs;
 	CErrorHandler* m_errorHandler;
 	CLexerGenerator m_generator;
 	std::string m_state;

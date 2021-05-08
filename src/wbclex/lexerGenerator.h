@@ -1,5 +1,4 @@
 #pragma once
-#include "adaptPtr.h"
 #include "regularExpression.h"
 
 #include <string>
@@ -70,7 +69,7 @@ class CLexerGenerator
 
 	STATEDATAVECTORMAP m_stateData;
 
-	typedef CAdaptPtr<CRegularExpression> regPtr;
+	typedef std::shared_ptr<CRegularExpression> regPtr;
 	std::map<std::string, regPtr> m_regularExpressions;
 	std::map<std::string, int> m_eofEvents;
 	std::map<std::string, std::string> m_vars;

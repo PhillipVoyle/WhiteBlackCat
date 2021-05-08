@@ -32,13 +32,13 @@ void CLexerGenerator::addEOFEvent(const std::string& state, int response)
 
 void CLexerGenerator::addEvent(const std::string & state, regularExpressionPtr& ptr)
 {
-	if(m_regularExpressions[state].m_ptr == nullptr)
+	if(m_regularExpressions[state] == nullptr)
 	{
-		m_regularExpressions[state].m_ptr = ptr;
+		m_regularExpressions[state] = ptr;
 	}
 	else
 	{
-		m_regularExpressions[state].m_ptr = CRegularExpression::CreateOrNode(m_regularExpressions[state].m_ptr, ptr);
+		m_regularExpressions[state] = CRegularExpression::CreateOrNode(m_regularExpressions[state], ptr);
 	}
 }
 
@@ -447,11 +447,11 @@ void CLexerGenerator::Process()
 	//TODO: make work if states contain 0 expressions, and
 	//only an EOF.
 
-	std::map<std::string,CAdaptPtr<CRegularExpression> >::iterator it;
+	std::map<std::string, std::shared_ptr<CRegularExpression>>::iterator it;
 	for(it = m_regularExpressions.begin(); it != m_regularExpressions.end(); it++)
 	{
 		std::string sname = it->first;
-		std::shared_ptr<CRegularExpression> exp = it->second.m_ptr;
+		std::shared_ptr<CRegularExpression> exp = it->second;
 		int nIDs = AssignPositionIDs(exp, 0);
 		Setnullptrable(exp);
 		std::vector<PositionSet> followPos(nIDs, PositionSet());
