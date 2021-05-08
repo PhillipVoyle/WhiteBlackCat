@@ -19,3 +19,6 @@ src/wbcparse/wbcparse: src/wbclex/*.cpp src/wbclex/*.h
 bin/wbcparse: src/wbcparse/wbcparse
 	cp src/wbcparse/wbcparse bin
 
+clean_tables:
+	$(MAKE) clean_tables -C src/wbclex
+	$(MAKE) clean_tables -C src/wbcparse
