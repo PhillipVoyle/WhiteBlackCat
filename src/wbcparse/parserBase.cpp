@@ -265,7 +265,7 @@ void CParserBase::addToken(const std::string& tokenName)
 
 syntax_string_list_t CParserBase::syntaxStringList()
 {
-	return syntax_string_list_t(new std::list<std::string>());
+	return std::make_shared<std::list<std::string>>();
 }
 
 std::string CParserBase::GetTokenDescription(Token* ptr)

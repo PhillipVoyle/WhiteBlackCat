@@ -24,28 +24,28 @@ public:
 
 	static ExpressionPtr CreateEndNode(unsigned endID)
 	{
-		ExpressionPtr newExp(new CRegularExpression());
+		ExpressionPtr newExp = std::make_shared<CRegularExpression>();
 		newExp->m_typeID = endNode;
 		newExp->m_endID = endID;
 		return newExp;
 	}
 	static ExpressionPtr CreateCharNode(char c)
 	{
-		ExpressionPtr newExp(new CRegularExpression());
+		ExpressionPtr newExp = std::make_shared<CRegularExpression>();
 		newExp->m_typeID = charNode;
 		newExp->m_c = c;
 		return newExp;
 	}
 	static ExpressionPtr CreateStarNode(ExpressionPtr& a)
 	{
-		ExpressionPtr newExp(new CRegularExpression());
+		ExpressionPtr newExp = std::make_shared<CRegularExpression>();
 		newExp->m_typeID = starNode;
 		newExp->m_a = a;
 		return newExp;
 	}
 	static ExpressionPtr CreateCatNode(ExpressionPtr& a, ExpressionPtr& b)
 	{
-		ExpressionPtr newExp(new CRegularExpression());
+		ExpressionPtr newExp = std::make_shared<CRegularExpression>();
 		newExp->m_typeID = catNode;
 		newExp->m_a = a;
 		newExp->m_b = b;
@@ -53,7 +53,7 @@ public:
 	}
 	static ExpressionPtr CreateOrNode(ExpressionPtr& a, ExpressionPtr& b)
 	{
-		ExpressionPtr newExp(new CRegularExpression());
+		ExpressionPtr newExp = std::make_shared<CRegularExpression>();
 		newExp->m_typeID = orNode;
 		newExp->m_a = a;
 		newExp->m_b = b;
@@ -114,7 +114,7 @@ public:
 
 	ExpressionPtr clone()
 	{
-		ExpressionPtr newExp(new CRegularExpression());
+		ExpressionPtr newExp = std::make_shared<CRegularExpression>();
 		newExp->m_typeID = m_typeID;
 		if(GetA() != nullptr)
 		{

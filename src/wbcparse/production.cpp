@@ -28,7 +28,7 @@ public:
 
 std::shared_ptr<IToken> IToken::Create(const std::string& identifier)
 {
-	return std::shared_ptr<IToken>(new CToken(identifier));
+	return std::make_shared<CToken>(identifier);
 }
 
 class CTokenList:public ITokenList
@@ -67,7 +67,7 @@ public:
 
 std::shared_ptr<ITokenList> ITokenList::Create(std::shared_ptr<IToken>& token, std::shared_ptr<ITokenList>& tokenList)
 {
-	return std::shared_ptr<ITokenList>(new CTokenList(token, tokenList));
+	return std::make_shared<CTokenList>(token, tokenList);
 }
 
 class CProduction:public IProduction
@@ -148,7 +148,7 @@ public:
 
 std::shared_ptr<IProduction> IProduction::Create(std::shared_ptr<IToken> left, std::shared_ptr<ITokenList> right, const std::string& response)
 {
-	return std::shared_ptr<IProduction>(new CProduction(left, right, response));
+	return std::make_shared<CProduction>(left, right, response);
 }
 
 class CProductions:public IProductions
@@ -179,5 +179,5 @@ public:
 
 std::shared_ptr<IProductions> IProductions::Create(std::shared_ptr<IProduction> &production, std::shared_ptr<IProductions>& productions)
 {
-	return std::shared_ptr<IProductions>(new CProductions(production, productions));
+	return std::make_shared<CProductions>(production, productions);
 }

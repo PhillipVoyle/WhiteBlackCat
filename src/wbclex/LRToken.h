@@ -27,13 +27,13 @@ class CLRToken
 	std::shared_ptr<CLRToken> m_next;
 	int m_state;
 	T m_tokenID;
-protected:
+
+public:
 	CLRToken(T tokenID):
 		m_state(0),
 		m_tokenID(tokenID)
 	{
 	}
-public:
 	typedef std::shared_ptr<CLRToken<T>> TokenPtr;
 
 	void SetNext(TokenPtr ptr)
@@ -74,7 +74,7 @@ public:
   template<T t>
   static TokenPtr CreateToken(typename TokenType<t>::transClass c)
   {
-    return TokenPtr(new CLRTokenWithData<T, typename TokenType<t>::transClass, typename TokenType<t>::storeClass>(t, c));
+    return std::make_shared<CLRTokenWithData<T, typename TokenType<t>::transClass, typename TokenType<t>::storeClass>>(t, c);
   }
   
 	template<T t>
@@ -82,8 +82,7 @@ public:
 	{
 		MustBeVoid<typename TokenType<t>::storeClass>::check();
 		MustBeVoid<typename TokenType<t>::transClass>::check();
-		return TokenPtr(new CLRToken<T>(t));
-    
+		return std::make_shared<CLRToken<T>>(t);
 	}
 };
 
