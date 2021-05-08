@@ -4,4 +4,4 @@
 #include <list>
 #include <string>
 
-typedef std::auto_ptr<std::list<std::string> > syntax_string_list_t;
+typedef std::shared_ptr<std::list<std::string> > syntax_string_list_t;

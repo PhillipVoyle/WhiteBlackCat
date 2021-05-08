@@ -11,7 +11,7 @@
 #include "lalrGenerator.h"
 
 typedef CLRToken<CParserTable::TokenID> Token;
-typedef std::auto_ptr<Token> TokenPtr;
+typedef std::shared_ptr<Token> TokenPtr;
 
 class CErrorHandler;
 
@@ -20,7 +20,7 @@ class CParserBase
 	CLALRGenerator m_generator;
 	std::string m_currentStoreType;
 	std::string m_currentTransType;
-	std::auto_ptr<IProductions> m_productions;
+	std::shared_ptr<IProductions> m_productions;
 	IProductions* m_nextProductions;
 
 	int m_precedence;

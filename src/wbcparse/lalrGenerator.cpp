@@ -93,7 +93,7 @@ bool CLALRGenerator::ReadVariable(const std::string& vName, std::string& vValue)
 }
 
 
-void CLALRGenerator::GenerateParser(std::auto_ptr<IProductions> &parseTree)
+void CLALRGenerator::GenerateParser(std::shared_ptr<IProductions> &parseTree)
 {
 	if(parseTree.get() != NULL && !m_bError)
 	{
@@ -101,11 +101,11 @@ void CLALRGenerator::GenerateParser(std::auto_ptr<IProductions> &parseTree)
 		ITokenList* rule = parseTree->GetProduction()->GetRight();
 
 		//augment grammar with S' -> S
-    std::auto_ptr<ITokenList> _empty;
-    std::auto_ptr<IToken> _tokenTerm = IToken::Create(firstNonTerminal);
-		std::auto_ptr<ITokenList> startSymbol = ITokenList::Create(_tokenTerm, _empty);
-		std::auto_ptr<IProduction> startProduction = IProduction::Create(IToken::Create("S'"), startSymbol, "#");
-		std::auto_ptr<IProductions> augmentedGrammar = IProductions::Create(startProduction, parseTree);
+    std::shared_ptr<ITokenList> _empty;
+    std::shared_ptr<IToken> _tokenTerm = IToken::Create(firstNonTerminal);
+		std::shared_ptr<ITokenList> startSymbol = ITokenList::Create(_tokenTerm, _empty);
+		std::shared_ptr<IProduction> startProduction = IProduction::Create(IToken::Create("S'"), startSymbol, "#");
+		std::shared_ptr<IProductions> augmentedGrammar = IProductions::Create(startProduction, parseTree);
 
 		m_grammar = augmentedGrammar.get();
 		ProcessSymbols();
@@ -1423,7 +1423,7 @@ void CLALRGenerator::DumpParseTables()
 	fParserHeader << "public:\n";
 	fParserHeader << "   typedef " << sTableName << "::TokenID TokenID;\n";
 	fParserHeader << "   typedef CLRToken<" << sTableName << "::TokenID> Token;\n";
-	fParserHeader << "   typedef Token::auto_ptr TokenPtr;\n";
+	fParserHeader << "   typedef Token::TokenPtr TokenPtr;\n";
 	fParserHeader << "private:\n";
 	fParserHeader << "   typedef " << sTableName << "::ActionID ActionID;\n";
 	fParserHeader << "   TokenPtr m_stack;\n";

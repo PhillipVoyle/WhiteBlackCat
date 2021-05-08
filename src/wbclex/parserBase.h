@@ -12,7 +12,7 @@
 class CErrorHandler;
 
 typedef CLRToken<CParserTable::TokenID> Token;
-typedef std::auto_ptr<Token> TokenPtr;
+typedef std::shared_ptr<Token> TokenPtr;
 
 class CParserBase
 {

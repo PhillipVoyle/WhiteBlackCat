@@ -5,7 +5,7 @@ template <class T>
 class CAdaptPtr
 {
 public:
-	std::auto_ptr<T> m_ptr;
+	std::shared_ptr<T> m_ptr;
 	CAdaptPtr()
 	{
 	}

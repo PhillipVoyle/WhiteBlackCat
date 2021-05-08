@@ -112,5 +112,5 @@ public:
 	bool checkVar(const std::string& varName);
 	CLALRGenerator();
 	virtual ~CLALRGenerator();
-	void GenerateParser(std::auto_ptr<IProductions> &parseTree);
+	void GenerateParser(std::shared_ptr<IProductions> &parseTree);
 };

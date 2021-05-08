@@ -244,7 +244,7 @@ class CParser
 public:
    typedef CParserTable::TokenID TokenID;
    typedef CLRToken<CParserTable::TokenID> Token;
-   typedef Token::auto_ptr TokenPtr;
+   typedef Token::TokenPtr TokenPtr;
 private:
    typedef CParserTable::ActionID ActionID;
    TokenPtr m_stack;

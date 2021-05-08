@@ -24,7 +24,7 @@ class CLRTokenWithData;
 template<typename T>
 class CLRToken
 {
-	std::auto_ptr<CLRToken> m_next;
+	std::shared_ptr<CLRToken> m_next;
 	int m_state;
 	T m_tokenID;
 protected:
@@ -34,13 +34,13 @@ protected:
 	{
 	}
 public:
-	typedef std::auto_ptr<CLRToken<T> > auto_ptr;
+	typedef std::shared_ptr<CLRToken<T>> TokenPtr;
 
-	void SetNext(auto_ptr ptr)
+	void SetNext(TokenPtr ptr)
 	{
 		m_next = ptr;
 	}
-	auto_ptr& GetNext()
+	TokenPtr& GetNext()
 	{
 		return m_next;
 	}
@@ -72,20 +72,21 @@ public:
   }
   
   template<T t>
-  static auto_ptr CreateToken(typename TokenType<t>::transClass c)
+  static TokenPtr CreateToken(typename TokenType<t>::transClass c)
   {
-    return auto_ptr(new CLRTokenWithData<T, typename TokenType<t>::transClass, typename TokenType<t>::storeClass>(t, c));
+    return TokenPtr(new CLRTokenWithData<T, typename TokenType<t>::transClass, typename TokenType<t>::storeClass>(t, c));
   }
   
 	template<T t>
-	static auto_ptr CreateToken_VOID()
+	static TokenPtr CreateToken_VOID()
 	{
 		MustBeVoid<typename TokenType<t>::storeClass>::check();
 		MustBeVoid<typename TokenType<t>::transClass>::check();
-		return auto_ptr(new CLRToken<T>(t));
+		return TokenPtr(new CLRToken<T>(t));
     
 	}
 };
+
 
 template<typename T, typename tc, typename sc>
 class CLRTokenWithData: public CLRToken<T>

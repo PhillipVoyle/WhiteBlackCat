@@ -35,12 +35,12 @@ void CParserBase::addRule(const std::string& left, syntax_string_list_t& right, 
 		str << " token " << left << " is undefined";
 		m_errorHandler->EmitError(str.str());
 	}
-	std::auto_ptr<IToken> tokenLeft = IToken::Create(left);
+	std::shared_ptr<IToken> tokenLeft = IToken::Create(left);
 	std::list<std::string>& list = *right;
 	std::list<std::string>::iterator it;
 
 	//tokens have been placed in the list in reverse order
-	std::auto_ptr<ITokenList> tokenList;
+	std::shared_ptr<ITokenList> tokenList;
 	for(it = list.begin(); it != list.end(); it++)
 	{
 		if(!m_generator.checkVar(*it))
@@ -49,16 +49,16 @@ void CParserBase::addRule(const std::string& left, syntax_string_list_t& right, 
 			str << " token " << *it << " is undefined";
 			m_errorHandler->EmitError(str.str());
 		}
-		std::auto_ptr<IToken> token = IToken::Create(*it);
+		std::shared_ptr<IToken> token = IToken::Create(*it);
 		tokenList = ITokenList::Create(token, tokenList);
 	}
-	std::auto_ptr<IProduction> production = IProduction::Create(tokenLeft, tokenList, response);
+	std::shared_ptr<IProduction> production = IProduction::Create(tokenLeft, tokenList, response);
 
 	production->SetPrecedence(m_precedence);
 	production->SetAssociativity(m_associativity);
 
-  std::auto_ptr<IProductions> _empty;
-	std::auto_ptr<IProductions> productions = IProductions::Create(production, _empty);
+  std::shared_ptr<IProductions> _empty;
+	std::shared_ptr<IProductions> productions = IProductions::Create(production, _empty);
 	IProductions* ptr = productions.get();
 
 	if(m_productions.get() == NULL)
