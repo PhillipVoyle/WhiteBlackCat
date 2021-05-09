@@ -1200,6 +1200,7 @@ void CLALRGenerator::DumpParseTables()
 	PrintHeader(fTableSource, sTableSource);
 
 	fTableHeader << "#include <utility>\n";
+	fTableHeader << "#include <string>\n";
 	fTableHeader << "class " << sTableName << std::endl;
 	fTableHeader << "{\n";
 	fTableHeader << "public:\n";
@@ -1235,12 +1236,12 @@ void CLALRGenerator::DumpParseTables()
 	fTableHeader << "   static const Action s_actionTable[kStates][kTerminals];\n";
 	fTableHeader << "   static const int s_gotoTable[kStates][kNonterminals];\n";
   fTableHeader << "   static const int s_earlyReduce[kStates];\n";
-  fTableHeader << "   static const char* s_tokenNames[kTerminals + kNonterminals];\n";
+  fTableHeader << "   static const std::string s_tokenNames[kTerminals + kNonterminals];\n";
 	fTableHeader << "public:\n";
 	fTableHeader << "   static const Action& GetAction(int nStateID, int nTerminalID);\n";
 	fTableHeader << "   static int GetGoto(int nStateID, int nNonterminalID);\n";
   fTableHeader << "   static int GetEarlyReduce(int nStateID);\n";
-  fTableHeader << "   static const char* GetTokenName(TokenID id);\n";
+  fTableHeader << "   static std::string GetTokenName(TokenID id);\n";
 	fTableHeader << "};\n\n";
 
 	fTableSource << "#include <assert.h>\n";
@@ -1340,7 +1341,7 @@ void CLALRGenerator::DumpParseTables()
   }
   
 	fTableSource << "};\n\n" << std::endl;
-  fTableSource << "const char* " << sTableName << "::s_tokenNames["<< sTableName << "::kTerminals + " << sTableName << "::kNonterminals] = {\n";
+  fTableSource << "const std::string " << sTableName << "::s_tokenNames["<< sTableName << "::kTerminals + " << sTableName << "::kNonterminals] = {\n";
 
 	for(unsigned terminalID = 0; terminalID < nTerminals; terminalID ++)
 	{
@@ -1380,7 +1381,7 @@ void CLALRGenerator::DumpParseTables()
 	fTableSource << "   return s_earlyReduce[stateID];\n";
 	fTableSource << "}\n\n";
   
-  fTableSource << "const char* " << sTableName << "::GetTokenName(" << sTableName << "::TokenID id)\n";
+  fTableSource << "std::string " << sTableName << "::GetTokenName(" << sTableName << "::TokenID id)\n";
   fTableSource << "{\n";
   fTableSource << "   assert(id >= 0 && id < kTerminals + kNonterminals);\n";
   fTableSource << "   return s_tokenNames[id];\n";

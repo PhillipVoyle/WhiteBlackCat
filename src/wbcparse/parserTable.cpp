@@ -115,7 +115,7 @@ const int CParserTable::s_earlyReduce[CParserTable::kStates] = {
 };
 
 
-const char* CParserTable::s_tokenNames[CParserTable::kTerminals + CParserTable::kNonterminals] = {
+const std::string CParserTable::s_tokenNames[CParserTable::kTerminals + CParserTable::kNonterminals] = {
       "tSemicolon",
       "tVariableName",
       "tAssign",
@@ -164,7 +164,7 @@ int CParserTable::GetEarlyReduce(int stateID)
    return s_earlyReduce[stateID];
 }
 
-const char* CParserTable::GetTokenName(CParserTable::TokenID id)
+std::string CParserTable::GetTokenName(CParserTable::TokenID id)
 {
    assert(id >= 0 && id < kTerminals + kNonterminals);
    return s_tokenNames[id];

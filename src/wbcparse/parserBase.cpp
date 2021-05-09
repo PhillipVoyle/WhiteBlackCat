@@ -4,6 +4,7 @@
 #include <vector>
 #include "errorHandler.h"
 #include <sstream>
+#include <string>
 
 CParserBase::CParserBase()
 {
