@@ -23,7 +23,7 @@ CParserBase::~CParserBase()
 
 regularExpressionPtr CParserBase::GetDef(const std::string& defName)
 {
-	std::map<std::string, std::shared_ptr<CRegularExpression>>::iterator it = m_defs.find(defName);
+	auto it = m_defs.find(defName);
 	if(it == m_defs.end())
 	{
 		std::stringstream str;

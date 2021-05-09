@@ -38,11 +38,10 @@ void CParserBase::addRule(const std::string& left, syntax_string_list_t& right, 
 	}
 	std::shared_ptr<IToken> tokenLeft = IToken::Create(left);
 	std::list<std::string>& list = *right;
-	std::list<std::string>::iterator it;
-
+	
 	//tokens have been placed in the list in reverse order
 	std::shared_ptr<ITokenList> tokenList;
-	for(it = list.begin(); it != list.end(); it++)
+	for(auto it = list.begin(); it != list.end(); it++)
 	{
 		if(!m_generator.checkVar(*it))
 		{
@@ -58,7 +57,7 @@ void CParserBase::addRule(const std::string& left, syntax_string_list_t& right, 
 	production->SetPrecedence(m_precedence);
 	production->SetAssociativity(m_associativity);
 
-  std::shared_ptr<IProductions> _empty;
+	std::shared_ptr<IProductions> _empty;
 	std::shared_ptr<IProductions> productions = IProductions::Create(production, _empty);
 	std::shared_ptr<IProductions> ptr = productions;
 
