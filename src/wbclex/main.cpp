@@ -11,7 +11,7 @@ int main(int argc, const char* argv[])
 		std::ifstream fin(argv[1]);
 		if(!fin)
 		{
-			std::cerr << "error: could not open file \"" << argv[1] << "\"" << std::endl;
+			std::cerr << "error: could not open file \"" << argv[1] << "\"" << std::endl;
 			return -1;
 		}
 		else
