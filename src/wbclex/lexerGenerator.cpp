@@ -86,52 +86,52 @@ int CLexerGenerator::AssignPositionIDs(std::shared_ptr<CRegularExpression> exp, 
 	return id;
 }
 
-bool CLexerGenerator::Getnullptrable(std::shared_ptr<CRegularExpression> exp)
+bool CLexerGenerator::GetNullable(std::shared_ptr<CRegularExpression> exp)
 {
 	if (exp == nullptr)
 	{
 		return true;
 	}
-	return exp->Getnullptrable();
+	return exp->GetNullable();
 }
 
-bool CLexerGenerator::Setnullptrable(std::shared_ptr<CRegularExpression> exp)
+bool CLexerGenerator::SetNullable(std::shared_ptr<CRegularExpression> exp)
 {
 	if (exp == nullptr)
 	{
 		return true;
 	}
 
-	bool bnullptrable = true;
+	bool bnullable = true;
 	switch (exp->GetTypeID())
 	{
 	case CRegularExpression::starNode:
-		Setnullptrable(exp->GetA());
-		bnullptrable = true;
+		SetNullable(exp->GetA());
+		bnullable = true;
 		break;
 	case CRegularExpression::orNode:
 	{
-		bool bA = Setnullptrable(exp->GetA());
-		bool bB = Setnullptrable(exp->GetB());
-		bnullptrable = bA || bB;
+		bool bA = SetNullable(exp->GetA());
+		bool bB = SetNullable(exp->GetB());
+		bnullable = bA || bB;
 	}
 	break;
 	case CRegularExpression::catNode:
 	{
-		bool bA = Setnullptrable(exp->GetA());
-		bool bB = Setnullptrable(exp->GetB());
-		bnullptrable = bA && bB;
+		bool bA = SetNullable(exp->GetA());
+		bool bB = SetNullable(exp->GetB());
+		bnullable = bA && bB;
 	}
 	break;
 	case CRegularExpression::charNode:
 	case CRegularExpression::endNode:
-		bnullptrable = false;
+		bnullable = false;
 		break;
 	default:
 		break;
 	}
-	exp->Setnullptrable(bnullptrable);
-	return bnullptrable;
+	exp->SetNullable(bnullable);
+	return bnullable;
 }
 
 void CLexerGenerator::ComputeFollowPos(std::shared_ptr<CRegularExpression> exp, std::vector<PositionSet> &followPos)
@@ -212,7 +212,7 @@ void CLexerGenerator::ComputeFollowPos(std::shared_ptr<CRegularExpression> exp, 
 
 		const PositionSet *uf = nullptr;
 		PositionSet ufHandle;
-		if (Getnullptrable(exp->GetA()))
+		if (GetNullable(exp->GetA()))
 		{
 			std::set_union(fpA->begin(), fpA->end(), fpB->begin(), fpB->end(), std::back_insert_iterator<PositionSet>(ufHandle));
 			uf = &ufHandle;
@@ -225,7 +225,7 @@ void CLexerGenerator::ComputeFollowPos(std::shared_ptr<CRegularExpression> exp, 
 
 		const PositionSet *ul = nullptr;
 		PositionSet ulHandle;
-		if (Getnullptrable(exp->GetB()))
+		if (GetNullable(exp->GetB()))
 		{
 			std::set_union(lpA->begin(), lpA->end(), lpB->begin(), lpB->end(), std::back_insert_iterator<PositionSet>(ulHandle));
 			ul = &ulHandle;
@@ -451,7 +451,7 @@ void CLexerGenerator::Process()
 		std::string sname = it->first;
 		std::shared_ptr<CRegularExpression> exp = it->second;
 		int nIDs = AssignPositionIDs(exp, 0);
-		Setnullptrable(exp);
+		SetNullable(exp);
 		std::vector<PositionSet> followPos(nIDs, PositionSet());
 		ComputeFollowPos(exp, followPos);
 		ComputeStates(followPos, exp, m_stateData[it->first]);

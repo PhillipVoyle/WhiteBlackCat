@@ -17,7 +17,7 @@ public:
 	char m_c;
 	unsigned m_endID;
 	CRegularExpression(){m_typeID = errorNode;}
-	bool m_bnullptrable;
+	bool m_bnullable;
 	int m_positionID;
 	std::vector<int> m_firstPos;
 	std::vector<int> m_lastPos;
@@ -89,8 +89,8 @@ public:
 	void SetID(int positionID){m_positionID = positionID;}
 	int GetID(){return m_positionID;}
 
-	void Setnullptrable(bool bnullptrable) {m_bnullptrable = bnullptrable;}
-	bool Getnullptrable() {return m_bnullptrable;}
+	void SetNullable(bool bnullable) {m_bnullable = bnullable;}
+	bool GetNullable() {return m_bnullable;}
 
 	void SetFirstPos(const std::vector<int>& firstPos)
 	{
