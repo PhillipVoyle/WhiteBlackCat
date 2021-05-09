@@ -4,13 +4,14 @@
 #include <vector>
 #include "errorHandler.h"
 #include <sstream>
+#include <string>
 
 CParserBase::CParserBase()
 {
-	m_nextProductions = NULL;
+	m_nextProductions = nullptr;
 	m_associativity = IProduction::asNone;
 	m_precedence = 0;
-	m_errorHandler = NULL;
+	m_errorHandler = nullptr;
 }
 
 void CParserBase::SetErrorHandler(CErrorHandler* errorHandler)
@@ -35,13 +36,12 @@ void CParserBase::addRule(const std::string& left, syntax_string_list_t& right, 
 		str << " token " << left << " is undefined";
 		m_errorHandler->EmitError(str.str());
 	}
-	std::auto_ptr<IToken> tokenLeft = IToken::Create(left);
+	std::shared_ptr<IToken> tokenLeft = IToken::Create(left);
 	std::list<std::string>& list = *right;
-	std::list<std::string>::iterator it;
-
+	
 	//tokens have been placed in the list in reverse order
-	std::auto_ptr<ITokenList> tokenList;
-	for(it = list.begin(); it != list.end(); it++)
+	std::shared_ptr<ITokenList> tokenList;
+	for(auto it = list.begin(); it != list.end(); it++)
 	{
 		if(!m_generator.checkVar(*it))
 		{
@@ -49,19 +49,19 @@ void CParserBase::addRule(const std::string& left, syntax_string_list_t& right, 
 			str << " token " << *it << " is undefined";
 			m_errorHandler->EmitError(str.str());
 		}
-		std::auto_ptr<IToken> token = IToken::Create(*it);
+		std::shared_ptr<IToken> token = IToken::Create(*it);
 		tokenList = ITokenList::Create(token, tokenList);
 	}
-	std::auto_ptr<IProduction> production = IProduction::Create(tokenLeft, tokenList, response);
+	std::shared_ptr<IProduction> production = IProduction::Create(tokenLeft, tokenList, response);
 
 	production->SetPrecedence(m_precedence);
 	production->SetAssociativity(m_associativity);
 
-  std::auto_ptr<IProductions> _empty;
-	std::auto_ptr<IProductions> productions = IProductions::Create(production, _empty);
-	IProductions* ptr = productions.get();
+	std::shared_ptr<IProductions> _empty;
+	std::shared_ptr<IProductions> productions = IProductions::Create(production, _empty);
+	std::shared_ptr<IProductions> ptr = productions;
 
-	if(m_productions.get() == NULL)
+	if(m_productions == nullptr)
 	{
 		m_productions = productions;
 	}
@@ -104,7 +104,7 @@ void CParserBase::assignVariable(const std::string& varname, const std::string& 
 void CParserBase::ParserError(TokenPtr tok)
 {
 	std::stringstream str;
-	str << "syntax error, before " << GetTokenDescription(tok.get()) << "";
+	str << "syntax error, before " << GetTokenDescription(tok) << "";
 	m_errorHandler->EmitError(str.str());
 }
 
@@ -265,10 +265,10 @@ void CParserBase::addToken(const std::string& tokenName)
 
 syntax_string_list_t CParserBase::syntaxStringList()
 {
-	return syntax_string_list_t(new std::list<std::string>());
+	return std::make_shared<std::list<std::string>>();
 }
 
-std::string CParserBase::GetTokenDescription(Token* ptr)
+std::string CParserBase::GetTokenDescription(std::shared_ptr<Token> ptr)
 {
 	CParserTable::TokenID id = ptr->GetTokenID();
 	switch(id)

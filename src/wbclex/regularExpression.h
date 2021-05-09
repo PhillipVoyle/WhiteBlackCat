@@ -8,89 +8,89 @@
 class CRegularExpression
 {
 public:
-	typedef std::auto_ptr<CRegularExpression> auto_ptr;
+	typedef std::shared_ptr<CRegularExpression> ExpressionPtr;
 
 	enum typeID {charNode, starNode, catNode, orNode, endNode, errorNode};
 	typeID m_typeID;
-	auto_ptr m_a;
-	auto_ptr m_b;
+	ExpressionPtr m_a;
+	ExpressionPtr m_b;
 	char m_c;
 	unsigned m_endID;
 	CRegularExpression(){m_typeID = errorNode;}
-	bool m_bNullable;
+	bool m_bnullable;
 	int m_positionID;
 	std::vector<int> m_firstPos;
 	std::vector<int> m_lastPos;
 
-	static auto_ptr CreateEndNode(unsigned endID)
+	static ExpressionPtr CreateEndNode(unsigned endID)
 	{
-		auto_ptr newExp(new CRegularExpression());
+		ExpressionPtr newExp = std::make_shared<CRegularExpression>();
 		newExp->m_typeID = endNode;
 		newExp->m_endID = endID;
 		return newExp;
 	}
-	static auto_ptr CreateCharNode(char c)
+	static ExpressionPtr CreateCharNode(char c)
 	{
-		auto_ptr newExp(new CRegularExpression());
+		ExpressionPtr newExp = std::make_shared<CRegularExpression>();
 		newExp->m_typeID = charNode;
 		newExp->m_c = c;
 		return newExp;
 	}
-	static auto_ptr CreateStarNode(auto_ptr& a)
+	static ExpressionPtr CreateStarNode(ExpressionPtr& a)
 	{
-		auto_ptr newExp(new CRegularExpression());
+		ExpressionPtr newExp = std::make_shared<CRegularExpression>();
 		newExp->m_typeID = starNode;
 		newExp->m_a = a;
 		return newExp;
 	}
-	static auto_ptr CreateCatNode(auto_ptr& a, auto_ptr& b)
+	static ExpressionPtr CreateCatNode(ExpressionPtr& a, ExpressionPtr& b)
 	{
-		auto_ptr newExp(new CRegularExpression());
+		ExpressionPtr newExp = std::make_shared<CRegularExpression>();
 		newExp->m_typeID = catNode;
 		newExp->m_a = a;
 		newExp->m_b = b;
 		return newExp;
 	}
-	static auto_ptr CreateOrNode(auto_ptr& a, auto_ptr& b)
+	static ExpressionPtr CreateOrNode(ExpressionPtr& a, ExpressionPtr& b)
 	{
-		auto_ptr newExp(new CRegularExpression());
+		ExpressionPtr newExp = std::make_shared<CRegularExpression>();
 		newExp->m_typeID = orNode;
 		newExp->m_a = a;
 		newExp->m_b = b;
 		return newExp;
 	}
-	static auto_ptr CreatePlusNode(auto_ptr& a)
+	static ExpressionPtr CreatePlusNode(ExpressionPtr& a)
 	{
-		if(a.get() == NULL)
+		if(a == nullptr)
 		{
-			return auto_ptr();
+			return ExpressionPtr();
 		}
 		else
 		{
-			auto_ptr clone = a->clone();
-			auto_ptr starNode = CreateStarNode(a);
+			ExpressionPtr clone = a->clone();
+			ExpressionPtr starNode = CreateStarNode(a);
 			return CreateCatNode(clone, starNode);
 		}
 	}
-	static auto_ptr CreateQMarkNode(auto_ptr& a)
+	static ExpressionPtr CreateQMarkNode(ExpressionPtr& a)
 	{
-		if(a.get() == NULL)
+		if(a == nullptr)
 		{
-			return auto_ptr();
+			return ExpressionPtr();
 		}
-    auto_ptr aptr;
+    	ExpressionPtr aptr;
 		return CreateOrNode(aptr, a);
 	}
 	typeID GetTypeID(){return m_typeID;}
-	CRegularExpression* GetA() {return m_a.get();}
-	CRegularExpression* GetB() {return m_b.get();}
+	std::shared_ptr<CRegularExpression> GetA() {return m_a;}
+	std::shared_ptr<CRegularExpression> GetB() {return m_b;}
 	char GetC(){return m_c;}
 	unsigned GetEnd(){return m_endID;}
 	void SetID(int positionID){m_positionID = positionID;}
 	int GetID(){return m_positionID;}
 
-	void SetNullable(bool bNullable) {m_bNullable = bNullable;}
-	bool GetNullable() {return m_bNullable;}
+	void SetNullable(bool bnullable) {m_bnullable = bnullable;}
+	bool GetNullable() {return m_bnullable;}
 
 	void SetFirstPos(const std::vector<int>& firstPos)
 	{
@@ -112,15 +112,15 @@ public:
 		return m_lastPos;
 	}
 
-	auto_ptr clone()
+	ExpressionPtr clone()
 	{
-		auto_ptr newExp(new CRegularExpression());
+		ExpressionPtr newExp = std::make_shared<CRegularExpression>();
 		newExp->m_typeID = m_typeID;
-		if(GetA() != NULL)
+		if(GetA() != nullptr)
 		{
 			newExp->m_a = m_a->clone();
 		}
-		if(GetB() != NULL)
+		if(GetB() != nullptr)
 		{
 			newExp->m_b = m_b->clone();
 		}
@@ -131,4 +131,4 @@ public:
 	}
 };
 
-typedef std::auto_ptr<CRegularExpression> regularExpressionPtr;
+typedef std::shared_ptr<CRegularExpression> regularExpressionPtr;

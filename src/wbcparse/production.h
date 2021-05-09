@@ -4,12 +4,12 @@
 
 class IToken
 {
-	friend class std::auto_ptr<IToken>; //auto_ptr is in sole responsibility for memory management
+	friend class std::shared_ptr<IToken>;
 protected:
 	virtual ~IToken() {}
 	IToken() {};
 public:
-	static std::auto_ptr<IToken> Create(const std::string& name);
+	static std::shared_ptr<IToken> Create(const std::string& name);
 	virtual const std::string& GetName() = 0;
 
 	virtual void SetID(unsigned) = 0;
@@ -18,14 +18,14 @@ public:
 
 class ITokenList
 {
-	friend class std::auto_ptr<ITokenList>;
+	friend class std::shared_ptr<ITokenList>;
 protected:
 	virtual ~ITokenList() {}
 	ITokenList() {};
 public:
-	static std::auto_ptr<ITokenList> Create(std::auto_ptr<IToken>& token, std::auto_ptr<ITokenList>& tokenList);
-	virtual IToken* GetToken() = 0;
-	virtual ITokenList* GetTokenList() = 0;
+	static std::shared_ptr<ITokenList> Create(std::shared_ptr<IToken>& token, std::shared_ptr<ITokenList>& tokenList);
+	virtual std::shared_ptr<IToken> GetToken() = 0;
+	virtual std::shared_ptr<ITokenList> GetTokenList() = 0;
 
 	virtual void SetIsTerminal(bool) = 0;
 	virtual bool GetIsTerminal(void) = 0;
@@ -33,14 +33,14 @@ public:
 
 class IProduction
 {
-	friend class std::auto_ptr<IProduction>;
+	friend class std::shared_ptr<IProduction>;
 protected:
 	virtual ~IProduction() {}
 	IProduction() {};
 public:
-	static std::auto_ptr<IProduction> Create(std::auto_ptr<IToken> left, std::auto_ptr<ITokenList> right, const std::string& response);
-	virtual IToken* GetLeft() = 0;
-	virtual ITokenList* GetRight() = 0;
+	static std::shared_ptr<IProduction> Create(std::shared_ptr<IToken> left, std::shared_ptr<ITokenList> right, const std::string& response);
+	virtual std::shared_ptr<IToken> GetLeft() = 0;
+	virtual std::shared_ptr<ITokenList> GetRight() = 0;
 	virtual const std::string& GetResponse() = 0;
 	virtual void SetID(unsigned id) = 0;
 	virtual unsigned GetID(void) = 0;
@@ -61,13 +61,13 @@ public:
 
 class IProductions
 {
-	friend class std::auto_ptr<IProductions>;
+	friend class std::shared_ptr<IProductions>;
 protected:
 	virtual ~IProductions() {};
 	IProductions() {};
 public:
-	static std::auto_ptr<IProductions> Create(std::auto_ptr<IProduction>& production, std::auto_ptr<IProductions>& productions);
-	virtual IProduction* GetProduction() = 0;
-	virtual IProductions* GetProductions() = 0;
-	virtual void SetProductions(std::auto_ptr<IProductions>& productions) = 0;
+	static std::shared_ptr<IProductions> Create(std::shared_ptr<IProduction>& production, std::shared_ptr<IProductions>& productions);
+	virtual std::shared_ptr<IProduction> GetProduction() = 0;
+	virtual std::shared_ptr<IProductions> GetProductions() = 0;
+	virtual void SetProductions(std::shared_ptr<IProductions> productions) = 0;
 };

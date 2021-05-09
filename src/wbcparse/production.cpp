@@ -26,32 +26,32 @@ public:
 	}
 };
 
-std::auto_ptr<IToken> IToken::Create(const std::string& identifier)
+std::shared_ptr<IToken> IToken::Create(const std::string& identifier)
 {
-	return std::auto_ptr<IToken>(new CToken(identifier));
+	return std::make_shared<CToken>(identifier);
 }
 
 class CTokenList:public ITokenList
 {
-	std::auto_ptr<IToken> m_token;
-	std::auto_ptr<ITokenList> m_tokenList;
+	std::shared_ptr<IToken> m_token;
+	std::shared_ptr<ITokenList> m_tokenList;
 	bool m_isTerminal;
 public:
-	CTokenList(std::auto_ptr<IToken>& token, std::auto_ptr<ITokenList>& tokenList):
+	CTokenList(std::shared_ptr<IToken>& token, std::shared_ptr<ITokenList>& tokenList):
 	  m_token(token),
 	  m_tokenList(tokenList),
 	  m_isTerminal(true)
 	{
 	}
 
-	IToken* GetToken()
+	std::shared_ptr<IToken> GetToken()
 	{
-		return m_token.get();
+		return m_token;
 	}
 
-	ITokenList* GetTokenList()
+	std::shared_ptr<ITokenList> GetTokenList()
 	{
-		return m_tokenList.get();
+		return m_tokenList;
 	}
 
 	void SetIsTerminal(bool isTerminal)
@@ -65,22 +65,22 @@ public:
 	}
 };
 
-std::auto_ptr<ITokenList> ITokenList::Create(std::auto_ptr<IToken>& token, std::auto_ptr<ITokenList>& tokenList)
+std::shared_ptr<ITokenList> ITokenList::Create(std::shared_ptr<IToken>& token, std::shared_ptr<ITokenList>& tokenList)
 {
-	return std::auto_ptr<ITokenList>(new CTokenList(token, tokenList));
+	return std::make_shared<CTokenList>(token, tokenList);
 }
 
 class CProduction:public IProduction
 {
-	std::auto_ptr<IToken> m_left;
-	std::auto_ptr<ITokenList> m_right;
+	std::shared_ptr<IToken> m_left;
+	std::shared_ptr<ITokenList> m_right;
 	std::string m_response;
 	unsigned m_id;
 	int m_precedence;
 	Associativity m_associativity;
 	int m_orderID;
 public:
-	CProduction(std::auto_ptr<IToken>& left, std::auto_ptr<ITokenList>& right, const std::string& response):
+	CProduction(std::shared_ptr<IToken>& left, std::shared_ptr<ITokenList>& right, const std::string& response):
 		m_left(left),
 		m_right(right),
 		m_response(response)
@@ -90,14 +90,14 @@ public:
 		m_orderID = -1;
 	}
 
-	IToken* GetLeft()
+	std::shared_ptr<IToken> GetLeft()
 	{
-		return m_left.get();
+		return m_left;
 	}
 
-	ITokenList* GetRight()
+	std::shared_ptr<ITokenList> GetRight()
 	{
-		return m_right.get();
+		return m_right;
 	}
 
 	const std::string& GetResponse()
@@ -146,38 +146,38 @@ public:
 	}
 };
 
-std::auto_ptr<IProduction> IProduction::Create(std::auto_ptr<IToken> left, std::auto_ptr<ITokenList> right, const std::string& response)
+std::shared_ptr<IProduction> IProduction::Create(std::shared_ptr<IToken> left, std::shared_ptr<ITokenList> right, const std::string& response)
 {
-	return std::auto_ptr<IProduction>(new CProduction(left, right, response));
+	return std::make_shared<CProduction>(left, right, response);
 }
 
 class CProductions:public IProductions
 {
-	std::auto_ptr<IProduction> m_production;
-	std::auto_ptr<IProductions> m_productions;
+	std::shared_ptr<IProduction> m_production;
+	std::shared_ptr<IProductions> m_productions;
 public:
-	CProductions(std::auto_ptr<IProduction> &production, std::auto_ptr<IProductions>& productions):
+	CProductions(std::shared_ptr<IProduction> &production, std::shared_ptr<IProductions>& productions):
 		m_production(production),
 		m_productions(productions)
 	{
 	}
 
-	IProduction* GetProduction()
+	std::shared_ptr<IProduction> GetProduction()
 	{
-		return m_production.get();
+		return m_production;
 	}
 
-	IProductions* GetProductions()
+	std::shared_ptr<IProductions> GetProductions()
 	{
-		return m_productions.get();
+		return m_productions;
 	}
-	void SetProductions(std::auto_ptr<IProductions>& productions)
+	void SetProductions(std::shared_ptr<IProductions> productions)
 	{
 		m_productions = productions;
 	}
 };
 
-std::auto_ptr<IProductions> IProductions::Create(std::auto_ptr<IProduction> &production, std::auto_ptr<IProductions>& productions)
+std::shared_ptr<IProductions> IProductions::Create(std::shared_ptr<IProduction> &production, std::shared_ptr<IProductions>& productions)
 {
-	return std::auto_ptr<IProductions>(new CProductions(production, productions));
+	return std::make_shared<CProductions>(production, productions);
 }

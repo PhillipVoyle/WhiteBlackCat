@@ -6,7 +6,7 @@
 
 CParserBase::CParserBase()
 {
-	m_errorHandler = NULL;
+	m_errorHandler = nullptr;
 	m_state = "\"stStart\"";
 }
 
@@ -23,7 +23,7 @@ CParserBase::~CParserBase()
 
 regularExpressionPtr CParserBase::GetDef(const std::string& defName)
 {
-	std::map<std::string, CAdaptPtr<CRegularExpression> >::iterator it = m_defs.find(defName);
+	auto it = m_defs.find(defName);
 	if(it == m_defs.end())
 	{
 		std::stringstream str;
@@ -33,7 +33,7 @@ regularExpressionPtr CParserBase::GetDef(const std::string& defName)
 	}
 	else
 	{
-		return it->second.m_ptr->clone();
+		return it->second->clone();
 	}
 }
 
@@ -143,7 +143,7 @@ void CParserBase::assignDef(const std::string& def, regularExpressionPtr r)
 	std::string ind("{");
 	ind.append(def);
 	ind.append("}");
-	m_defs[ind].m_ptr = r;
+	m_defs[ind] = r;
 }
 
 void CParserBase::assignVar(const std::string& varName, const std::string& varValue)
@@ -153,11 +153,11 @@ void CParserBase::assignVar(const std::string& varName, const std::string& varVa
 
 regularExpressionPtr CParserBase::regCat(regularExpressionPtr r1, regularExpressionPtr r2)
 {
-	if(r1.get() == NULL)
+	if(r1 == nullptr)
 	{
 		return r2;
 	}
-	if(r2.get() == NULL)
+	if(r2 == nullptr)
 	{
 		return r1;
 	}

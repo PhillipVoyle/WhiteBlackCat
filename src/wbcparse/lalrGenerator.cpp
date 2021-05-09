@@ -16,7 +16,7 @@ CLALRGenerator::CLALRGenerator()
 	m_bError = false;
 	setType("$", "void", "void");
 	setType("S'","void", "void");
-	m_errorHandler = NULL;
+	m_errorHandler = nullptr;
 }
 
 CLALRGenerator::~CLALRGenerator()
@@ -83,7 +83,7 @@ std::string CLALRGenerator::DecipherString(const std::string& s)
 
 bool CLALRGenerator::ReadVariable(const std::string& vName, std::string& vValue)
 {
-	std::map<std::string, std::string>::iterator it = m_variables.find(vName);
+	auto it = m_variables.find(vName);
 	if(it == m_variables.end())
 	{
 		return false;
@@ -93,21 +93,21 @@ bool CLALRGenerator::ReadVariable(const std::string& vName, std::string& vValue)
 }
 
 
-void CLALRGenerator::GenerateParser(std::auto_ptr<IProductions> &parseTree)
+void CLALRGenerator::GenerateParser(std::shared_ptr<IProductions> &parseTree)
 {
-	if(parseTree.get() != NULL && !m_bError)
+	if(parseTree != nullptr && !m_bError)
 	{
 		std::string firstNonTerminal = parseTree->GetProduction()->GetLeft()->GetName();
-		ITokenList* rule = parseTree->GetProduction()->GetRight();
+		std::shared_ptr<ITokenList> rule = parseTree->GetProduction()->GetRight();
 
 		//augment grammar with S' -> S
-    std::auto_ptr<ITokenList> _empty;
-    std::auto_ptr<IToken> _tokenTerm = IToken::Create(firstNonTerminal);
-		std::auto_ptr<ITokenList> startSymbol = ITokenList::Create(_tokenTerm, _empty);
-		std::auto_ptr<IProduction> startProduction = IProduction::Create(IToken::Create("S'"), startSymbol, "#");
-		std::auto_ptr<IProductions> augmentedGrammar = IProductions::Create(startProduction, parseTree);
+    std::shared_ptr<ITokenList> _empty;
+    std::shared_ptr<IToken> _tokenTerm = IToken::Create(firstNonTerminal);
+		std::shared_ptr<ITokenList> startSymbol = ITokenList::Create(_tokenTerm, _empty);
+		std::shared_ptr<IProduction> startProduction = IProduction::Create(IToken::Create("S'"), startSymbol, "#");
+		std::shared_ptr<IProductions> augmentedGrammar = IProductions::Create(startProduction, parseTree);
 
-		m_grammar = augmentedGrammar.get();
+		m_grammar = augmentedGrammar;
 		ProcessSymbols();
 		GenerateLR0Items();
 		//DumpLR0States();
@@ -127,19 +127,19 @@ void CLALRGenerator::GenerateParser(std::auto_ptr<IProductions> &parseTree)
 		{
 			DumpParseTables();
 		}
-		m_grammar = NULL;
+		m_grammar = nullptr;
 	}
 }
 
 void CLALRGenerator::ProcessSymbols()
 {
 	//first production is the augmented one anyhow
-	IProductions* list = m_grammar->GetProductions();
-	while(list != NULL)
+	std::shared_ptr<IProductions> list = m_grammar->GetProductions();
+	while(list != nullptr)
 	{
-		IProduction* production = list->GetProduction();
+		std::shared_ptr<IProduction> production = list->GetProduction();
 		const std::string& nonterminal = production->GetLeft()->GetName();
-		std::map<std::string, NonterminalID>::iterator itNT = m_NonterminalIDs.find(nonterminal);
+		auto itNT = m_NonterminalIDs.find(nonterminal);
 		if(itNT == m_NonterminalIDs.end())
 		{
 			NonterminalID id = (NonterminalID) m_Nonterminals.size();
@@ -157,22 +157,22 @@ void CLALRGenerator::ProcessSymbols()
 
 	list = m_grammar;
 	int nProductions = 0;
-	while(list != NULL)
+	while(list != nullptr)
 	{
-		IProduction* production = list->GetProduction();
+		auto production = list->GetProduction();
 
 		m_productions.push_back(production);
-		ITokenList* tokenList = production->GetRight();
+		auto tokenList = production->GetRight();
 		production->SetID(nProductions);
 		nProductions++;
-		while(tokenList != NULL)
+		while(tokenList != nullptr)
 		{
 			const std::string& token = tokenList->GetToken()->GetName();
 
-			std::map<std::string, NonterminalID>::iterator itNT = m_NonterminalIDs.find(token);
+			auto itNT = m_NonterminalIDs.find(token);
 			if(itNT == m_NonterminalIDs.end())
 			{
-				std::map<std::string, TerminalID>::iterator itT = m_TerminalIDs.find(token);
+				auto itT = m_TerminalIDs.find(token);
 				if(itT == m_TerminalIDs.end())
 				{
 					TerminalID id = (TerminalID) m_TerminalIDs.size();
@@ -209,13 +209,11 @@ CLALRGenerator::LR1State CLALRGenerator::LR1Closure(const LR1State& I)
 	typedef std::pair<LR0ItemID, TerminalID> unmarked_pair;
 	std::list<unmarked_pair> unmarked;
 
-	LR1State::const_iterator itI;
-	for(itI = I.begin(); itI != I.end(); itI++)
+	for(auto itI = I.begin(); itI != I.end(); itI++)
 	{
 		LR0ItemID itemID = itI->first;
-		const std::set<TerminalID>& terminals = itI->second;
-		std::set<TerminalID>::const_iterator itTerm;
-		for(itTerm = terminals.begin(); itTerm != terminals.end(); itTerm++)
+		const auto& terminals = itI->second;
+		for(auto itTerm = terminals.begin(); itTerm != terminals.end(); itTerm++)
 		{
 			unmarked.push_back(unmarked_pair(itemID, *itTerm));
 		}
@@ -225,27 +223,26 @@ CLALRGenerator::LR1State CLALRGenerator::LR1Closure(const LR1State& I)
 		unmarked_pair LR1item = unmarked.front();
 		unmarked.pop_front();
 		LR0ItemID LR0itemID = LR1item.first;
-		const LR0Item& LR0item = m_LR0Items[LR0itemID];
-		if(LR0item.second == NULL)
+		const auto& LR0item = m_LR0Items[LR0itemID];
+		if(LR0item.second == nullptr)
 		{
 			continue;
 		}
 		if(!LR0item.second->GetIsTerminal())
 		{
-			NonterminalID nonterminalId = LR0item.second->GetToken()->GetID();
-			std::set<TerminalID> first = First(LR0item.second->GetTokenList(), LR1item.second);
-			IProductions* list = m_grammar;
-			while(list != NULL)
+			auto nonterminalId = LR0item.second->GetToken()->GetID();
+			auto first = First(LR0item.second->GetTokenList(), LR1item.second);
+			auto list = m_grammar;
+			while(list != nullptr)
 			{
-				IProduction* production = list->GetProduction();
+				auto production = list->GetProduction();
 				if(production->GetLeft()->GetID() == nonterminalId)
 				{
 					LR0Item newLR0Item(production, production->GetRight());
-					LR0ItemID newLR0ItemID = GetLR0ItemID(newLR0Item);
-					std::set<TerminalID>::iterator itSet;
-					for(itSet = first.begin(); itSet != first.end(); itSet++)
+					auto newLR0ItemID = GetLR0ItemID(newLR0Item);
+					for(auto itSet = first.begin(); itSet != first.end(); itSet++)
 					{
-						std::map<LR0ItemID, std::set<TerminalID> >::iterator itMap = J.find(newLR0ItemID);
+						auto itMap = J.find(newLR0ItemID);
 						unmarked_pair newLR1Item(newLR0ItemID, *itSet);
 						if(itMap == J.end() || itMap->second.find(*itSet) == itMap->second.end())
 						{
@@ -265,42 +262,6 @@ CLALRGenerator::LR1State CLALRGenerator::LR1Closure(const LR1State& I)
 CLALRGenerator::LR0State CLALRGenerator::LR0Closure(const LR0State &I)
 {
 	LR0State J = I;
-/*
-	// recreated original code - works the same as the implementation, below
-	bool bDidSomething;
-	do
-	{
-		bDidSomething = false;
-		LR0State::iterator it;
-		for(it = J.begin(); it != J.end(); it++)
-		{
-			LR0ItemID itemID = *it;
-			LR0Item item = m_LR0Items[itemID];
-			if(item.second != NULL)
-			{
-				const std::string& token = item.second->GetToken()->GetName();
-				IProductions* list = m_grammar->GetProductions();
-				while(list != NULL)
-				{
-					IProduction* production = list->GetProduction();
-					if(production != NULL && production->GetLeft()->GetName() == token)
-					{
-						LR0Item nextItem;
-						nextItem.first = production;
-						nextItem.second = production->GetRight();
-						LR0ItemID nextItemID = GetLR0ItemID(nextItem);
-						if(J.find(nextItemID) == J.end())
-						{
-							bDidSomething = true;
-							J.insert(nextItemID);
-						}
-					}
-					list = list->GetProductions();
-				}
-			}
-		}
-	}while(bDidSomething);
-*/
 	std::list<LR0ItemID> unmarked;
 	std::copy(I.begin(), I.end(), std::back_insert_iterator<std::list<LR0ItemID> >(unmarked));
 
@@ -309,14 +270,14 @@ CLALRGenerator::LR0State CLALRGenerator::LR0Closure(const LR0State &I)
 		LR0ItemID itemID = unmarked.front();
 		unmarked.pop_front();
 		LR0Item item = m_LR0Items[itemID];
-		if(item.second != NULL)
+		if(item.second != nullptr)
 		{
 			const std::string& token = item.second->GetToken()->GetName();
-			IProductions* list = m_grammar->GetProductions();
-			while(list != NULL)
+			std::shared_ptr<IProductions> list = m_grammar->GetProductions();
+			while(list != nullptr)
 			{
-				IProduction* production = list->GetProduction();
-				if(production != NULL && production->GetLeft()->GetName() == token)
+				std::shared_ptr<IProduction> production = list->GetProduction();
+				if(production != nullptr && production->GetLeft()->GetName() == token)
 				{
 					LR0Item nextItem;
 					nextItem.first = production;
@@ -337,7 +298,7 @@ CLALRGenerator::LR0State CLALRGenerator::LR0Closure(const LR0State &I)
 
 CLALRGenerator::LR0ItemID CLALRGenerator::GetLR0ItemID(const CLALRGenerator::LR0Item &item)
 {
-	std::map<LR0Item, LR0ItemID>::iterator it = m_LR0ItemIDs.find(item);
+	auto it = m_LR0ItemIDs.find(item);
 	if(it == m_LR0ItemIDs.end())
 	{
 		LR0ItemID id = (LR0ItemID)m_LR0Items.size();
@@ -357,7 +318,7 @@ CLALRGenerator::LR0StateID CLALRGenerator::GetLR0StateID(const LR0State& state)
 	{
 		return BADStateID;
 	}
-	std::map<LR0State, LR0StateID>::iterator it = m_LR0StateIDs.find(state);
+	auto it = m_LR0StateIDs.find(state);
 	if(it == m_LR0StateIDs.end())
 	{
 		LR0StateID id = (LR0StateID) m_LR0States.size();
@@ -377,11 +338,10 @@ CLALRGenerator::LR0StateID CLALRGenerator::GetLR0StateID(const LR0State& state)
 CLALRGenerator::LR0StateID CLALRGenerator::GetLR0Goto(LR0StateID id, const std::string& token)
 {
 	LR0State newState;
-	std::set<LR0ItemID>::iterator it;
-	for(it = m_LR0States[id].state.begin(); it != m_LR0States[id].state.end(); it++)
+	for(auto it = m_LR0States[id].state.begin(); it != m_LR0States[id].state.end(); it++)
 	{
 		const LR0Item& item = m_LR0Items[*it];
-		if(item.second != NULL)
+		if(item.second != nullptr)
 		{
 			if(token == item.second->GetToken()->GetName())
 			{
@@ -420,13 +380,13 @@ void CLALRGenerator::GenerateLR0Items()
 		std::vector<LR0State> gotoNT(m_Nonterminals.size(), kEmptyState);
 		std::vector<LR0State> gotoT(m_Terminals.size(), kEmptyState);
 		
-		std::set<LR0ItemID>::iterator it;
-		for(it = m_LR0States[idI].state.begin(); it != m_LR0States[idI].state.end(); it++)
+		auto it = m_LR0States[idI].state.begin();
+		for(; it != m_LR0States[idI].state.end(); it++)
 		{
 			const LR0Item item = m_LR0Items[*it];
-			if(item.second != NULL)
+			if(item.second != nullptr)
 			{
-				ITokenList* tokens = item.second;
+				std::shared_ptr<ITokenList> tokens = item.second;
 				LR0Item newItem;
 				newItem.first = item.first;
 				newItem.second = item.second->GetTokenList();
@@ -454,24 +414,6 @@ void CLALRGenerator::GenerateLR0Items()
 			LR0StateID stateOnGoto = GetLR0StateID(LR0Closure(gotoT[terminalid]));
 			m_LR0States[idI].m_gotoOnTerminal[terminalid] = stateOnGoto;
 		}
-		/*
-		//this stuff could be worded more efficiently (see above)
-		//is now debug-only code that does a consistency check on the 
-		for(int nonterminalID = 0; nonterminalID < (int)m_Nonterminals.size(); nonterminalID++)
-		{
-			const std::string& nonterminal = m_Nonterminals[nonterminalID];
-			LR0StateID stateOnGotoDebug = GetLR0Goto(idI, nonterminal);
-			LR0StateID stateOnGoto = m_LR0States[idI].m_gotoOnNonterminal[nonterminalID];
-			assert(stateOnGotoDebug == stateOnGoto);
-		}
-		for(int terminalid = 0; terminalid < (int)m_Terminals.size(); terminalid++)
-		{
-			const std::string& terminal = m_Terminals[terminalid];
-			LR0StateID stateOnGotoDebug = GetLR0Goto(idI, terminal);
-			LR0StateID stateOnGoto = m_LR0States[idI].m_gotoOnTerminal[terminalid];
-			assert(stateOnGotoDebug == stateOnGoto);
-		}
-		//*/
 	}
 }
 
@@ -480,14 +422,14 @@ void CLALRGenerator::PrintLR0Item(LR0ItemID itemID)
 	const LR0Item& item = m_LR0Items[itemID];
 	std::cout << item.first->GetLeft()->GetName();
 	std::cout << " ->";
-	ITokenList* list = item.first->GetRight();
+	std::shared_ptr<ITokenList> list = item.first->GetRight();
 	for(;;)
 	{
 		if(list == item.second)
 		{
 			std::cout << " .";
 		}
-		if(list == NULL)
+		if(list == nullptr)
 		{
 			break;
 		}
@@ -502,8 +444,7 @@ void CLALRGenerator::DumpLR0States()
 	for(int stateID = 0; stateID < (int)m_LR0States.size(); stateID++)
 	{
 		std::cout << "State " << stateID << std::endl;
-		LR0State::iterator it;
-		for(it = m_LR0States[stateID].state.begin(); it !=  m_LR0States[stateID].state.end(); it++)
+		for(auto it = m_LR0States[stateID].state.begin(); it !=  m_LR0States[stateID].state.end(); it++)
 		{
 			LR0ItemID id = *it;
 			std::cout << "   ";
@@ -520,8 +461,7 @@ void CLALRGenerator::DumpLR0Kernels()
 	for(int stateID = 0; stateID < (int)m_LR0States.size(); stateID++)
 	{
 		std::cout << "State " << stateID << std::endl;
-		LR0State::iterator it;
-		for(it = m_LR0Kernels[stateID].begin(); it !=  m_LR0Kernels[stateID].end(); it++)
+		for(auto it = m_LR0Kernels[stateID].begin(); it !=  m_LR0Kernels[stateID].end(); it++)
 		{
 			LR0ItemID id = *it;
 			std::cout << "   ";
@@ -563,8 +503,7 @@ void CLALRGenerator::ConvertLR0ItemsToKernels()
 	for(int stateID = 0; stateID < (int) m_LR0States.size(); stateID++)
 	{
 		LR0State stateKernel;
-		LR0State::iterator it;
-		for(it = m_LR0States[stateID].state.begin(); it != m_LR0States[stateID].state.end(); it++)
+		for(auto it = m_LR0States[stateID].state.begin(); it != m_LR0States[stateID].state.end(); it++)
 		{
 			LR0ItemID itemID = *it;
 			const LR0Item& item = m_LR0Items[itemID];
@@ -583,12 +522,12 @@ void CLALRGenerator::ConvertLR0ItemsToKernels()
 
 void CLALRGenerator::ComputeFirstSets()
 {
-	IProductions* list = m_grammar;
-	while(list != NULL)
+	std::shared_ptr<IProductions> list = m_grammar;
+	while(list != nullptr)
 	{
-		IProduction* production = list->GetProduction();
+		std::shared_ptr<IProduction> production = list->GetProduction();
 		NonterminalID sourceID = production->GetLeft()->GetID();
-		if(production->GetRight() == NULL)
+		if(production->GetRight() == nullptr)
 		{
 			m_firstSets[sourceID].insert(LookAheadID);
 		}
@@ -600,12 +539,12 @@ void CLALRGenerator::ComputeFirstSets()
 	{
 		list = m_grammar;
 		bDidSomething = false;
-		while(list != NULL)
+		while(list != nullptr)
 		{
-			IProduction* production = list->GetProduction();
+			std::shared_ptr<IProduction> production = list->GetProduction();
 			NonterminalID sourceID = production->GetLeft()->GetID();
-			ITokenList* tokens = production->GetRight();
-			while(tokens != NULL)
+			std::shared_ptr<ITokenList> tokens = production->GetRight();
+			while(tokens != nullptr)
 			{
 				unsigned tokenID = tokens->GetToken()->GetID();
 				if(tokens->GetIsTerminal())
@@ -620,8 +559,7 @@ void CLALRGenerator::ComputeFirstSets()
 				else
 				{
 					std::set<TerminalID> insertSet = m_firstSets[tokenID];
-					std::set<TerminalID>::iterator itLoop;
-					for(itLoop = insertSet.begin(); itLoop != insertSet.end(); itLoop++)
+					for(auto itLoop = insertSet.begin(); itLoop != insertSet.end(); itLoop++)
 					{
 						if(m_firstSets[sourceID].find(*itLoop) == m_firstSets[sourceID].end())
 						{
@@ -644,11 +582,11 @@ void CLALRGenerator::ComputeFirstSets()
 }
 
 
-std::set<CLALRGenerator::TerminalID> CLALRGenerator::First(ITokenList* list, TerminalID terminal)
+std::set<CLALRGenerator::TerminalID> CLALRGenerator::First(std::shared_ptr<ITokenList> list, TerminalID terminal)
 {
 	std::set<TerminalID> first;
-	ITokenList* tokens = list;
-	while(tokens != NULL)
+	std::shared_ptr<ITokenList> tokens = list;
+	while(tokens != nullptr)
 	{
 		unsigned tokenID = tokens->GetToken()->GetID();
 		if(tokens->GetIsTerminal())
@@ -658,19 +596,18 @@ std::set<CLALRGenerator::TerminalID> CLALRGenerator::First(ITokenList* list, Ter
 		}
 		else
 		{
-			const std::set<TerminalID>& insertSet = m_firstSets[tokenID];
-			std::set<TerminalID>::const_iterator itLoop;
+			const auto& insertSet = m_firstSets[tokenID];
 			bool bLookAhead = false;
-			for(itLoop = insertSet.begin(); itLoop != insertSet.end(); itLoop++)
+			for(auto itLoop = insertSet.begin(); itLoop != insertSet.end(); itLoop++)
 			{
 				if(*itLoop == LookAheadID)
 				{
 					bLookAhead = true;
 				}
-        else
-        {
-          first.insert(*itLoop); //MOD: 31 Aug 2011, only if it isnt LookAheadID
-        }
+				else
+				{
+					first.insert(*itLoop); //MOD: 31 Aug 2011, only if it isnt LookAheadID
+				}
 			}
 
 			if(bLookAhead)
@@ -689,8 +626,7 @@ std::set<CLALRGenerator::TerminalID> CLALRGenerator::First(ITokenList* list, Ter
 void CLALRGenerator::DumpFirstSets()
 {
 	std::cout << "Dumping FIRST sets" << std::endl;
-	std::map<NonterminalID, std::set<TerminalID> >::iterator it;
-	for(it = m_firstSets.begin(); it != m_firstSets.end(); it++)
+	for(auto it = m_firstSets.begin(); it != m_firstSets.end(); it++)
 	{
 		NonterminalID id = it->first;
 		std::cout << "FIRST(";
@@ -713,7 +649,7 @@ void CLALRGenerator::DumpFirstSets()
 		const std::set<TerminalID>& firstSet = it->second;
 		if(firstSet.size() > 0)
 		{
-			std::set<TerminalID>::const_iterator it = firstSet.begin();
+			auto it = firstSet.begin();
 			for(;;)
 			{
 				TerminalID terminalID = *it;
@@ -744,25 +680,22 @@ void CLALRGenerator::InitLALRTables()
 	for(stateID = 0; stateID < m_LR0Kernels.size(); stateID++)
 	{
 		const LR0State& state = m_LR0Kernels[stateID];
-		LR0State::const_iterator it;
-		for(it = state.begin(); it != state.end(); it++)
+		for(auto it = state.begin(); it != state.end(); it++)
 		{
 			LR0ItemID srcItemID = *it;
 			std::pair<LR0StateID, LR0ItemID> sourceItem(stateID, srcItemID);
 			LR1State j;
 			j[srcItemID].insert(LookAheadID);
 			const LR1State jprime = LR1Closure(j);
-			LR1State::const_iterator jpIt;
-			for(jpIt = jprime.begin(); jpIt != jprime.end(); jpIt++)
+			for(auto jpIt = jprime.begin(); jpIt != jprime.end(); jpIt++)
 			{
 				const LR0ItemID itemID = jpIt->first;
 				const LR0Item& item = m_LR0Items[itemID];
-        //todo: I'm not sure if this is right?
-				if(item.second == NULL)
+				//todo: I'm not sure if this is right?
+				if(item.second == nullptr)
 				{
 					const std::set<TerminalID>& terminals = jpIt->second;
-					std::set<TerminalID>::const_iterator itTerminal;
-					for(itTerminal = terminals.begin(); itTerminal != terminals.end(); itTerminal++)
+					for(auto itTerminal = terminals.begin(); itTerminal != terminals.end(); itTerminal++)
 					{
 						TerminalID id = *itTerminal;
 						std::pair<LR0StateID, LR0ItemID> targetItem(stateID, itemID);
@@ -780,8 +713,8 @@ void CLALRGenerator::InitLALRTables()
 				else
 				{
 					bool bTerminal = item.second->GetIsTerminal();
-					IToken* token = item.second->GetToken();
-					ITokenList* tokenList = item.second->GetTokenList();
+					std::shared_ptr<IToken> token = item.second->GetToken();
+					std::shared_ptr<ITokenList> tokenList = item.second->GetTokenList();
 
 					const LR0Item successor(item.first, tokenList);
 					LR0ItemID successorID = GetLR0ItemID(successor);
@@ -797,8 +730,7 @@ void CLALRGenerator::InitLALRTables()
 					}
 					std::pair<LR0StateID, LR0ItemID> targetItem(nextStateID, successorID);
 					const std::set<TerminalID>& terminals = jpIt->second;
-					std::set<TerminalID>::const_iterator itTerminal;
-					for(itTerminal = terminals.begin(); itTerminal != terminals.end(); itTerminal++)
+					for(auto itTerminal = terminals.begin(); itTerminal != terminals.end(); itTerminal++)
 					{
 						TerminalID id = *itTerminal;
 						if(id == LookAheadID)
@@ -817,8 +749,8 @@ void CLALRGenerator::InitLALRTables()
 
 
 	//insert it as a lookahead for the base item
-	IProduction* startProduction = m_grammar->GetProduction();
-	ITokenList* startRight = startProduction->GetRight();
+	std::shared_ptr<IProduction> startProduction = m_grammar->GetProduction();
+	std::shared_ptr<ITokenList> startRight = startProduction->GetRight();
 
 	LR0Item firstItem(startProduction, startRight);
 	LR0ItemID firstItemID = GetLR0ItemID(firstItem);
@@ -828,14 +760,12 @@ void CLALRGenerator::InitLALRTables()
 
 void CLALRGenerator::DumpLALRPropogationTable()
 {
-	std::map<std::pair<LR0StateID, LR0ItemID>, std::set<std::pair<LR0StateID, LR0ItemID> > >::iterator it;
-	for(it = m_propagationTable.begin(); it != m_propagationTable.end(); it++)
+	for(auto it = m_propagationTable.begin(); it != m_propagationTable.end(); it++)
 	{
 		std::cout << "From I" << it->first.first <<": ";
 		PrintLR0Item(it->first.second);
 		std::cout << std::endl;
-		std::set<std::pair<LR0StateID, LR0ItemID> >::const_iterator setIt;
-		for(setIt = it->second.begin(); setIt != it->second.end(); setIt++)
+		for(auto setIt = it->second.begin(); setIt != it->second.end(); setIt++)
 		{
 			std::cout << "   I" << setIt->first << ": ";
 			PrintLR0Item(setIt->second);
@@ -847,8 +777,7 @@ void CLALRGenerator::DumpLALRPropogationTable()
 
 void CLALRGenerator::DumpLALRLookAheads()
 {
-	std::map<std::pair<LR0StateID, LR0ItemID>, std::set<TerminalID> >::iterator it;
-	for(it = m_LALRItems.begin(); it != m_LALRItems.end(); it++)
+	for(auto it = m_LALRItems.begin(); it != m_LALRItems.end(); it++)
 	{
 		const std::pair<LR0StateID, LR0ItemID>& index = it->first;
 		const std::set<TerminalID>& terminals = it->second;
@@ -856,7 +785,7 @@ void CLALRGenerator::DumpLALRLookAheads()
 		PrintLR0Item(index.second);
 		std::cout << " {";
 
-		std::set<TerminalID>::const_iterator itSet = terminals.begin();
+		auto itSet = terminals.begin();
 		for(;;)
 		{
 			TerminalID terminalId = *itSet;
@@ -881,28 +810,24 @@ void CLALRGenerator::ComputeLALRLookAheads()
 	do
 	{
 		bChanged = false;
-		std::map<std::pair<LR0StateID, LR0ItemID>, std::set<std::pair<LR0StateID, LR0ItemID> > >::iterator it;
-		for(it = m_propagationTable.begin(); it != m_propagationTable.end(); it++)
+		for(auto it = m_propagationTable.begin(); it != m_propagationTable.end(); it++)
 		{
 			const std::pair<LR0StateID, LR0ItemID> src = it->first;
 			const std::set<std::pair<LR0StateID, LR0ItemID> > &targets = it->second;
-			std::set<std::pair<LR0StateID, LR0ItemID> >::const_iterator itTgts;
 			const std::set<TerminalID>& srcSet = m_LALRItems[src];
-			for(itTgts = targets.begin(); itTgts != targets.end(); itTgts++)
+			for(auto itTgts = targets.begin(); itTgts != targets.end(); itTgts++)
 			{
 				const std::pair<LR0StateID, LR0ItemID> tgt = *itTgts;
-				std::set<TerminalID>::const_iterator itSetSrc;
 
 				const std::set<TerminalID> kEmptySet;
 				const std::pair<std::pair<LR0StateID, LR0ItemID>, std::set<TerminalID> > kEmptyItem(tgt,kEmptySet);
 
-				for(itSetSrc = srcSet.begin(); itSetSrc != srcSet.end(); itSetSrc++)
+				for(auto itSetSrc = srcSet.begin(); itSetSrc != srcSet.end(); itSetSrc++)
 				{
 					TerminalID id = *itSetSrc;
 
-					std::pair<std::map<std::pair<LR0StateID, LR0ItemID>, std::set<TerminalID> >::iterator, bool> insertResult;
-					insertResult = m_LALRItems.insert(kEmptyItem);
-					std::map<std::pair<LR0StateID, LR0ItemID>, std::set<TerminalID> >::iterator itFind = insertResult.first;
+					auto insertResult = m_LALRItems.insert(kEmptyItem);
+					auto itFind = insertResult.first;
 
 					std::set<TerminalID>& tgtTerminals = itFind->second;
 					if(tgtTerminals.find(id) == tgtTerminals.end())
@@ -941,18 +866,16 @@ void CLALRGenerator::GenerateActions()
 		}
 	}
 
-	std::map<std::pair<LR0StateID, LR0ItemID>, std::set<TerminalID> >::iterator it;
-	for(it = m_LALRItems.begin(); it != m_LALRItems.end(); it++)
+	for(auto it = m_LALRItems.begin(); it != m_LALRItems.end(); it++)
 	{
 		const std::pair<LR0StateID, LR0ItemID> index = it->first;
 		LR0Item item = m_LR0Items[index.second];
 		unsigned stateID = index.first;
-		if(item.second == NULL)
+		if(item.second == nullptr)
 		{
 			int reductionID = item.first->GetID();
 			const std::set<TerminalID>& terminals = it->second;
-			std::set<TerminalID>::const_iterator itSet;
-			for(itSet = terminals.begin(); itSet != terminals.end(); itSet++)
+			for(auto itSet = terminals.begin(); itSet != terminals.end(); itSet++)
 			{
 				unsigned terminalID = *itSet;
 				m_actions[stateID][terminalID].insert(Action(aReduce, reductionID));
@@ -968,8 +891,7 @@ CLALRGenerator::ActionSet CLALRGenerator::ComputeImportantActions(const CLALRGen
 	ActionSet bestActions;
 	IProduction::Associativity bestAssociativity = IProduction::asNone;
 	bestActions.clear();
-	ActionSet::const_iterator it;
-	for(it = aset.begin(); it != aset.end(); it++)
+	for(auto it = aset.begin(); it != aset.end(); it++)
 	{
 		bool bCommit = false;
 		bool bShifts = false;
@@ -981,8 +903,7 @@ CLALRGenerator::ActionSet CLALRGenerator::ComputeImportantActions(const CLALRGen
 		{
 			bShifts = true;
 			const LR0State &state = m_LR0Kernels[a.second];
-			LR0State::const_iterator itState;
-			for(itState = state.begin(); itState != state.end(); itState++)
+			for(auto itState = state.begin(); itState != state.end(); itState++)
 			{
 				int itemID = *itState;
 				const LR0Item& item = m_LR0Items[itemID];
@@ -1093,8 +1014,7 @@ void CLALRGenerator::CheckActions()
 					bConflict = true;
 					std::stringstream str;
 					str << "CONFLICT at state " << stateID << " on input " << m_Terminals[terminalID];
-					ActionSet::iterator it;
-					for(it = iaset.begin(); it != iaset.end(); it++)
+					for(auto it = iaset.begin(); it != iaset.end(); it++)
 					{
 						str << std::endl;
 						Action a = *it;
@@ -1106,12 +1026,12 @@ void CLALRGenerator::CheckActions()
 						case aReduce:
 							
 							str << " Reduce ";
-							IProduction* production = m_productions[a.second];
-							ITokenList* list = production->GetRight();
+							std::shared_ptr<IProduction> production = m_productions[a.second];
+							std::shared_ptr<ITokenList> list = production->GetRight();
 							str << production->GetLeft()->GetName() << " ->";
 							for(;;)
 							{
-								if(list == NULL)
+								if(list == nullptr)
 								{
 									break;
 								}
@@ -1132,15 +1052,14 @@ void CLALRGenerator::CheckActions()
 		if(bConflict)
 		{
 			const LR0State& state = m_LR0States[stateID].state;
-			LR0State::const_iterator it;
 			std::cerr << "State " << stateID <<":\n";
-			for(it = state.begin(); it != state.end(); it++)
+			for(auto it = state.begin(); it != state.end(); it++)
 			{
 				LR0ItemID id = *it;
 				const LR0Item& item = m_LR0Items[id];
-				IProduction* production = item.first;
-				ITokenList* list = production->GetRight();
-				ITokenList* tokens = item.second;
+				std::shared_ptr<IProduction> production = item.first;
+				std::shared_ptr<ITokenList> list = production->GetRight();
+				std::shared_ptr<ITokenList> tokens = item.second;
 				std::cerr << production->GetLeft()->GetName() << " ->";
 				for(;;)
 				{
@@ -1148,7 +1067,7 @@ void CLALRGenerator::CheckActions()
 					{
 						std::cerr << " .";
 					}
-					if(list == NULL)
+					if(list == nullptr)
 					{
 						break;
 					}
@@ -1163,7 +1082,7 @@ void CLALRGenerator::CheckActions()
 
 void PrintHeader(std::ostream& os, const std::string& filename)
 {
-	os << "/*\n   " << filename << ", generated by ParserGenie (c) Phillip Voyle 2005.\n*/\n" << std::endl;
+	os << "/*\n   " << filename << ", generated by wbcparse (c) Phillip Voyle 2005 - 2021.\n*/\n" << std::endl;
 
 }
 
@@ -1200,6 +1119,7 @@ void CLALRGenerator::DumpParseTables()
 	PrintHeader(fTableSource, sTableSource);
 
 	fTableHeader << "#include <utility>\n";
+	fTableHeader << "#include <string>\n";
 	fTableHeader << "class " << sTableName << std::endl;
 	fTableHeader << "{\n";
 	fTableHeader << "public:\n";
@@ -1235,12 +1155,12 @@ void CLALRGenerator::DumpParseTables()
 	fTableHeader << "   static const Action s_actionTable[kStates][kTerminals];\n";
 	fTableHeader << "   static const int s_gotoTable[kStates][kNonterminals];\n";
   fTableHeader << "   static const int s_earlyReduce[kStates];\n";
-  fTableHeader << "   static const char* s_tokenNames[kTerminals + kNonterminals];\n";
+  fTableHeader << "   static const std::string s_tokenNames[kTerminals + kNonterminals];\n";
 	fTableHeader << "public:\n";
 	fTableHeader << "   static const Action& GetAction(int nStateID, int nTerminalID);\n";
 	fTableHeader << "   static int GetGoto(int nStateID, int nNonterminalID);\n";
   fTableHeader << "   static int GetEarlyReduce(int nStateID);\n";
-  fTableHeader << "   static const char* GetTokenName(TokenID id);\n";
+  fTableHeader << "   static std::string GetTokenName(TokenID id);\n";
 	fTableHeader << "};\n\n";
 
 	fTableSource << "#include <assert.h>\n";
@@ -1340,7 +1260,7 @@ void CLALRGenerator::DumpParseTables()
   }
   
 	fTableSource << "};\n\n" << std::endl;
-  fTableSource << "const char* " << sTableName << "::s_tokenNames["<< sTableName << "::kTerminals + " << sTableName << "::kNonterminals] = {\n";
+  fTableSource << "const std::string " << sTableName << "::s_tokenNames["<< sTableName << "::kTerminals + " << sTableName << "::kNonterminals] = {\n";
 
 	for(unsigned terminalID = 0; terminalID < nTerminals; terminalID ++)
 	{
@@ -1380,7 +1300,7 @@ void CLALRGenerator::DumpParseTables()
 	fTableSource << "   return s_earlyReduce[stateID];\n";
 	fTableSource << "}\n\n";
   
-  fTableSource << "const char* " << sTableName << "::GetTokenName(" << sTableName << "::TokenID id)\n";
+  fTableSource << "std::string " << sTableName << "::GetTokenName(" << sTableName << "::TokenID id)\n";
   fTableSource << "{\n";
   fTableSource << "   assert(id >= 0 && id < kTerminals + kNonterminals);\n";
   fTableSource << "   return s_tokenNames[id];\n";
@@ -1390,7 +1310,7 @@ void CLALRGenerator::DumpParseTables()
 	fParserHeader << "#include \"" << sTableHeader << "\"\n";
 	fParserHeader << "#include <assert.h>\n\n";
 
-  fParserHeader << "/*\n   Type Definitions:\n   ParserGenie generates type defining classes for each\n";
+  fParserHeader << "/*\n   Type Definitions:\n   wbcparse generates type defining classes for each\n";
 	fParserHeader << "*/\n";
   for(unsigned terminalID = 0; terminalID < nTerminals; terminalID ++)
 	{
@@ -1423,7 +1343,7 @@ void CLALRGenerator::DumpParseTables()
 	fParserHeader << "public:\n";
 	fParserHeader << "   typedef " << sTableName << "::TokenID TokenID;\n";
 	fParserHeader << "   typedef CLRToken<" << sTableName << "::TokenID> Token;\n";
-	fParserHeader << "   typedef Token::auto_ptr TokenPtr;\n";
+	fParserHeader << "   typedef Token::TokenPtr TokenPtr;\n";
 	fParserHeader << "private:\n";
 	fParserHeader << "   typedef " << sTableName << "::ActionID ActionID;\n";
 	fParserHeader << "   TokenPtr m_stack;\n";
@@ -1440,11 +1360,11 @@ void CLALRGenerator::DumpParseTables()
 	fParserHeader << "      switch(nReduce)\n";
 	fParserHeader << "      {\n";
   
-	IProductions* productions = m_grammar;
+	std::shared_ptr<IProductions> productions = m_grammar;
 	int nProductionID = 0;
-	while(productions != NULL)
+	while(productions != nullptr)
 	{
-		IProduction* production = productions->GetProduction();
+		std::shared_ptr<IProduction> production = productions->GetProduction();
 		fParserHeader << "      case " << nProductionID << ":\n";
 		fParserHeader << "      {\n";
 		std::string storeType = getStoreType(production->GetLeft()->GetName());
@@ -1452,10 +1372,10 @@ void CLALRGenerator::DumpParseTables()
 		{
 			fParserHeader << "         " << storeType << " $$;\n";
 		}
-		ITokenList* tokens = production->GetRight();
+		std::shared_ptr<ITokenList> tokens = production->GetRight();
 		if(nProductionID == 0)
 		{
-			IToken* token = tokens->GetToken();
+			std::shared_ptr<IToken> token = tokens->GetToken();
 			std::string sstoreType = getStoreType(token->GetName());
 			fParserHeader << "         this->Accept(";
 			if(sstoreType != "void")
@@ -1469,15 +1389,15 @@ void CLALRGenerator::DumpParseTables()
 		}
 		else
 		{
-			std::vector<IToken*> tokenVec;
-			while(tokens != NULL)
+			std::vector<std::shared_ptr<IToken>> tokenVec;
+			while(tokens != nullptr)
 			{
 				tokenVec.push_back(tokens->GetToken());
 				tokens = tokens->GetTokenList();
 			}
 			while(!tokenVec.empty())
 			{
-				IToken* token = tokenVec.back();
+				std::shared_ptr<IToken> token = tokenVec.back();
 				std::string sstoreType = getStoreType(token->GetName());
 				if(sstoreType != "void")
 				{
@@ -1584,7 +1504,7 @@ bool CLALRGenerator::checkVar(const std::string& varName)
 
 std::string CLALRGenerator::getStoreType(const std::string& varName)
 {
-	std::map<std::string, std::pair<std::string, std::string> >::iterator it = m_tokenTypes.find(varName);
+	auto it = m_tokenTypes.find(varName);
 	if(it != m_tokenTypes.end())
 	{
 		return it->second.first;
@@ -1600,7 +1520,7 @@ std::string CLALRGenerator::getStoreType(const std::string& varName)
 
 std::string CLALRGenerator::getTransType(const std::string& varName)
 {
-	std::map<std::string, std::pair<std::string, std::string> >::iterator it = m_tokenTypes.find(varName);
+	auto it = m_tokenTypes.find(varName);
 	if(it != m_tokenTypes.end())
 	{
 		return it->second.second;
