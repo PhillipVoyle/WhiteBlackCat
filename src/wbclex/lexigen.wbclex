@@ -1,7 +1,5 @@
 $LEXERNAME = "CLexer"
 $TABLENAME = "CLexerTable"
-$HEADEROUT = "lexer.h"
-$SOURCEOUT = "lexer.cpp"
 
 whitespace = %[ \t]+%
 escape = %\\(.|\n)%
