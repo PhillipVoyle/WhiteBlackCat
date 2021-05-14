@@ -1,0 +1,14 @@
+
+number = %0|[1-9][0-9]*%
+
+ON %{number}% { this->numberToken(lexeme); }
+ON %\+% { this->add(); }
+ON %\-% { this->sub(); }
+ON %\*% { this->mul(); }
+ON %\/% { this->div(); }
+ON %\(% { this->left_parenthesis(); }
+ON %\)% { this->right_parenthesis(); }
+ON %\n%  { this->endline(); }
+ON %[ \t]% { this->whitespace(); }
+ON eof {this->eof(); }
+ON %.% {this->unexpected(lexeme);}
