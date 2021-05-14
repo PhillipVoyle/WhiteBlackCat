@@ -16,5 +16,5 @@ tables: lexigen_table.cpp parserTable.cpp
 
 clean_tables:
 	rm -f lexigen_table.cpp parserTable.cpp lexigen_table.h parserTable.h
-	rm wbclex
+	rm -f wbclex
 
