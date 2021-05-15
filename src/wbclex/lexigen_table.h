@@ -24,11 +24,13 @@ private:
 
    static const int s_dataOffsets[kStates];
    static const int s_announceOnEOF[kStates];
+   static const bool s_canEarlyAnnounce[kInnerStates];
    static const int s_announceData[kInnerStates];
    static const int s_transitionData[kInnerStates][128];
 
 public:
    static int GetAnnounce(int state, int nInnerState);
+   static bool CanEarlyAnnounce(int state, int nInnerState);
    static int GetAnnounceOnEOF(int state);
    static int GetTransition(int state, int nInnerState, char c);
 };

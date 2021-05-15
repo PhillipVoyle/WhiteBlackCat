@@ -51,52 +51,57 @@ public:
       for(;;)
       {
          int newAnnounce = this->GetAnnounce(m_currentState, stateid);
+         bool earlyAnnounce = false;
+         char c = '\0';
          if(newAnnounce != -1)
          {
             lexeme = sbuffer;
             announce = newAnnounce;
          }
          
-         char c;
-         if(m_ungetBuffer.size() > 0)
-         {
-            c = m_ungetBuffer.front();
-            m_ungetBuffer.pop_front();
-         }
-         else
-         {
-            for(;;)
+         if (this->CanEarlyAnnounce(m_currentState, stateid)) {
+            stateid = -1;
+            earlyAnnounce = true;
+         } else {
+            if(m_ungetBuffer.size() > 0)
             {
-               _inStream.get(c);
-               if(_inStream.eof())
-               {
-                  c = EOF;
-               }
-               else if(c < 0)
+               c = m_ungetBuffer.front();
+               m_ungetBuffer.pop_front();
+            }
+            else
+            {
+               for(;;)
                {
                   _inStream.get(c);
-                  continue;
+                  if(_inStream.eof())
+                  {
+                     c = EOF;
+                  }
+                  else if(c < 0)
+                  {
+                     _inStream.get(c);
+                     continue;
+                  }
+                  break;
                }
-               break;
             }
+            
+            if(c == EOF)
+            {
+               stateid = -1;
+            }
+            else
+            {
+               assert(c >= 0);
+               assert(c < 128);
+               stateid = this->GetTransition(m_currentState, stateid, c);
+            }
+            sbuffer.append(1, c);
          }
-         
-         if(c == EOF)
-         {
-            stateid = -1;
-         }
-         else
-         {
-            assert(c >= 0);
-            assert(c < 128);
-            stateid = this->GetTransition(m_currentState, stateid, c);
-         }
-         sbuffer.append(1, c);
-         
          if(stateid == -1)
          {
             bool bQuit = false;
-            if((sbuffer.size() == 1) && c == EOF)
+            if(!earlyAnnounce && (sbuffer.size() == 1) && c == EOF)
             {
                bQuit = true;
                announce = this->GetAnnounceOnEOF(m_currentState);

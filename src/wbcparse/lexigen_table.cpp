@@ -688,6 +688,80 @@ const int CLexerTable::s_transitionData[CLexerTable::kInnerStates][128] =
    }
 };
 
+const bool CLexerTable::s_canEarlyAnnounce[CLexerTable::kInnerStates] = {
+   false,
+   false,
+   true,
+   true,
+   true,
+   false,
+   true,
+   true,
+   false,
+   true,
+   true,
+   false,
+   true,
+   false,
+   false,
+   false,
+   false,
+   true,
+   true,
+   true,
+   true,
+   true,
+   false,
+   true,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   true,
+   false,
+   true,
+   true,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   true,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   true,
+   true,
+   false,
+   true,
+   true,
+   false,
+   true,
+   false
+};
+
+bool CLexerTable::CanEarlyAnnounce(int state, int nInnerState)
+{
+   return s_canEarlyAnnounce[s_dataOffsets[state] + nInnerState];
+}
+
 int CLexerTable::GetAnnounce(int state, int nInnerState)
 {
    return s_announceData[s_dataOffsets[state] + nInnerState];

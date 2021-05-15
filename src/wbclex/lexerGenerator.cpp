@@ -546,10 +546,12 @@ void CLexerGenerator::Export()
 	fTableHeader << "   static const int kInnerStates = " << nNumStates << ";\n\n";
 	fTableHeader << "   static const int s_dataOffsets[kStates];\n";
 	fTableHeader << "   static const int s_announceOnEOF[kStates];\n";
+	fTableHeader << "   static const bool s_canEarlyAnnounce[kInnerStates];\n";
 	fTableHeader << "   static const int s_announceData[kInnerStates];\n";
 	fTableHeader << "   static const int s_transitionData[kInnerStates][128];\n";
 	fTableHeader << "\npublic:\n";
 	fTableHeader << "   static int GetAnnounce(int state, int nInnerState);\n";
+	fTableHeader << "   static bool CanEarlyAnnounce(int state, int nInnerState);\n";
 	fTableHeader << "   static int GetAnnounceOnEOF(int state);\n";
 	fTableHeader << "   static int GetTransition(int state, int nInnerState, char c);\n";
 	fTableHeader << "};\n"
@@ -596,52 +598,57 @@ void CLexerGenerator::Export()
 	fHeader << "      for(;;)\n";
 	fHeader << "      {\n";
 	fHeader << "         int newAnnounce = this->GetAnnounce(m_currentState, stateid);\n";
+	fHeader << "         bool earlyAnnounce = false;\n";
+	fHeader << "         char c = '\\0';\n";
 	fHeader << "         if(newAnnounce != -1)\n";
 	fHeader << "         {\n";
 	fHeader << "            lexeme = sbuffer;\n";
 	fHeader << "            announce = newAnnounce;\n";
 	fHeader << "         }\n";
 	fHeader << "         \n";
-	fHeader << "         char c;\n";
-	fHeader << "         if(m_ungetBuffer.size() > 0)\n";
-	fHeader << "         {\n";
-	fHeader << "            c = m_ungetBuffer.front();\n";
-	fHeader << "            m_ungetBuffer.pop_front();\n";
-	fHeader << "         }\n";
-	fHeader << "         else\n";
-	fHeader << "         {\n";
-	fHeader << "            for(;;)\n";
+	fHeader << "         if (this->CanEarlyAnnounce(m_currentState, stateid)) {\n";
+	fHeader << "            stateid = -1;\n";
+	fHeader << "            earlyAnnounce = true;\n";
+	fHeader << "         } else {\n";
+	fHeader << "            if(m_ungetBuffer.size() > 0)\n";
 	fHeader << "            {\n";
-	fHeader << "               _inStream.get(c);\n";
-	fHeader << "               if(_inStream.eof())\n";
-	fHeader << "               {\n";
-	fHeader << "                  c = EOF;\n";
-	fHeader << "               }\n";
-	fHeader << "               else if(c < 0)\n";
+	fHeader << "               c = m_ungetBuffer.front();\n";
+	fHeader << "               m_ungetBuffer.pop_front();\n";
+	fHeader << "            }\n";
+	fHeader << "            else\n";
+	fHeader << "            {\n";
+	fHeader << "               for(;;)\n";
 	fHeader << "               {\n";
 	fHeader << "                  _inStream.get(c);\n";
-	fHeader << "                  continue;\n";
+	fHeader << "                  if(_inStream.eof())\n";
+	fHeader << "                  {\n";
+	fHeader << "                     c = EOF;\n";
+	fHeader << "                  }\n";
+	fHeader << "                  else if(c < 0)\n";
+	fHeader << "                  {\n";
+	fHeader << "                     _inStream.get(c);\n";
+	fHeader << "                     continue;\n";
+	fHeader << "                  }\n";
+	fHeader << "                  break;\n";
 	fHeader << "               }\n";
-	fHeader << "               break;\n";
 	fHeader << "            }\n";
+	fHeader << "            \n";
+	fHeader << "            if(c == EOF)\n";
+	fHeader << "            {\n";
+	fHeader << "               stateid = -1;\n";
+	fHeader << "            }\n";
+	fHeader << "            else\n";
+	fHeader << "            {\n";
+	fHeader << "               assert(c >= 0);\n";
+	fHeader << "               assert(c < 128);\n";
+	fHeader << "               stateid = this->GetTransition(m_currentState, stateid, c);\n";
+	fHeader << "            }\n";
+	fHeader << "            sbuffer.append(1, c);\n";
 	fHeader << "         }\n";
-	fHeader << "         \n";
-	fHeader << "         if(c == EOF)\n";
-	fHeader << "         {\n";
-	fHeader << "            stateid = -1;\n";
-	fHeader << "         }\n";
-	fHeader << "         else\n";
-	fHeader << "         {\n";
-	fHeader << "            assert(c >= 0);\n";
-	fHeader << "            assert(c < 128);\n";
-	fHeader << "            stateid = this->GetTransition(m_currentState, stateid, c);\n";
-	fHeader << "         }\n";
-	fHeader << "         sbuffer.append(1, c);\n";
-	fHeader << "         \n";
 	fHeader << "         if(stateid == -1)\n";
 	fHeader << "         {\n";
 	fHeader << "            bool bQuit = false;\n";
-	fHeader << "            if((sbuffer.size() == 1) && c == EOF)\n";
+	fHeader << "            if(!earlyAnnounce && (sbuffer.size() == 1) && c == EOF)\n";
 	fHeader << "            {\n";
 	fHeader << "               bQuit = true;\n";
 	fHeader << "               announce = this->GetAnnounceOnEOF(m_currentState);\n";
@@ -776,9 +783,7 @@ void CLexerGenerator::Export()
 	for (itDVM = m_stateData.begin(); itDVM != m_stateData.end(); itDVM++)
 	{
 		STATEDATAVECTOR &dv = itDVM->second;
-
-		STATEDATAVECTOR::iterator itDV;
-		for (itDV = dv.begin(); itDV != dv.end(); itDV++)
+		for (auto itDV = dv.begin(); itDV != dv.end(); itDV++)
 		{
 			fTableSource << "   {";
 			int *transitions = itDV->m_transitions;
@@ -814,6 +819,38 @@ void CLexerGenerator::Export()
 	}
 	fTableSource << "};\n\n";
 
+	fTableSource << "const bool "<< sTableName << "::s_canEarlyAnnounce[" << sTableName << "::kInnerStates] = {";
+	index = 0;
+	for (itDVM = m_stateData.begin(); itDVM != m_stateData.end(); itDVM++)
+	{
+		STATEDATAVECTOR &dv = itDVM->second;
+		for (auto itDV = dv.begin(); itDV != dv.end(); itDV++)
+		{
+			if (index != 0) {
+				fTableSource << ",";
+			}
+			fTableSource << "\n";
+			bool hasTransition = false;
+			int *transitions = itDV->m_transitions;
+			for (int n = 0; n < 128; n++) {
+				if (transitions[n] != -1) {
+					hasTransition = true;
+					break;
+				}
+			}
+			if ( itDV->m_announce > 0 && !hasTransition) {
+				fTableSource << "   true";
+			} else {
+				fTableSource << "   false";
+			}
+			index ++;
+		}
+	}
+	fTableSource << "\n};\n\n";
+	fTableSource << "bool " << sTableName << "::CanEarlyAnnounce(int state, int nInnerState)\n";
+	fTableSource << "{\n";
+	fTableSource << "   return s_canEarlyAnnounce[s_dataOffsets[state] + nInnerState];\n";
+	fTableSource << "}\n\n";
 	fTableSource << "int " << sTableName << "::GetAnnounce(int state, int nInnerState)\n";
 	fTableSource << "{\n";
 	fTableSource << "   return s_announceData[s_dataOffsets[state] + nInnerState];\n";
