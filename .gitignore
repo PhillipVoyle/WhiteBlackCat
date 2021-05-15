@@ -1,4 +1,5 @@
 /bin
 /src/wbclex/wbclex
 /src/wbcparse/wbcparse
+/src/wbcparse/example
 /.vscode
