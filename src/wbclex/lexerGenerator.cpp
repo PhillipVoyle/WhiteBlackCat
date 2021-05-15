@@ -6,6 +6,8 @@
 #include <fstream>
 #include <iomanip>
 #include <math.h>
+#include <map>
+#include <set>
 
 const CLexerGenerator::PositionSet CLexerGenerator::kEmptyPositionSet;
 
@@ -501,6 +503,30 @@ void CLexerGenerator::PrintBanner(std::ostream &s, std::string &fname)
 	s << std::endl;
 }
 
+std::string CLexerGenerator::GetCharExport(int c) {
+
+	std::stringstream result;
+	char cc = (char)c;
+	if (cc == '\t') {
+		result << "\'\\t\'";
+	} else if (cc == '\n') {
+		result << "\'\\n\'";
+	} else if (cc == '\r') {
+		result << "\'\\r\'";
+	} else if (cc == '\f') {
+		result << "\'\\f\'";
+	} else if (cc == '\'') {
+		result << "\'\\\'\'";
+	} else if (cc == '\\') {
+		result << "\'\\\\\'";
+	} else if (c >= 32 && c <= 126) {
+		result << "\'" << cc << "\'";
+	} else {
+		return std::to_string(c);
+	}
+	return result.str();
+}
+
 void CLexerGenerator::Export()
 {
 	std::string sLexerName = "CLexigen";
@@ -548,7 +574,6 @@ void CLexerGenerator::Export()
 	fTableHeader << "   static const int s_announceOnEOF[kStates];\n";
 	fTableHeader << "   static const bool s_canEarlyAnnounce[kInnerStates];\n";
 	fTableHeader << "   static const int s_announceData[kInnerStates];\n";
-	fTableHeader << "   static const int s_transitionData[kInnerStates][128];\n";
 	fTableHeader << "\npublic:\n";
 	fTableHeader << "   static int GetAnnounce(int state, int nInnerState);\n";
 	fTableHeader << "   static bool CanEarlyAnnounce(int state, int nInnerState);\n";
@@ -778,47 +803,6 @@ void CLexerGenerator::Export()
 	}
 	fTableSource << "};\n\n";
 
-	fTableSource << "const int " << sTableName << "::s_transitionData[" << sTableName << "::kInnerStates][128] =\n{\n";
-	index = 0;
-	for (itDVM = m_stateData.begin(); itDVM != m_stateData.end(); itDVM++)
-	{
-		STATEDATAVECTOR &dv = itDVM->second;
-		for (auto itDV = dv.begin(); itDV != dv.end(); itDV++)
-		{
-			fTableSource << "   {";
-			int *transitions = itDV->m_transitions;
-			int transition = 0;
-			for (;;)
-			{
-				if (transition % NCOLS == 0)
-				{
-					fTableSource << "\n      ";
-				}
-				fTableSource << std::setiosflags(std::ios_base::right) << std::setw(wid) << transitions[transition];
-				transition++;
-				if (transition < 128)
-				{
-					fTableSource << ", ";
-				}
-				else
-				{
-					fTableSource << "\n";
-					break;
-				}
-			}
-			index++;
-			if (index < nNumStates)
-			{
-				fTableSource << "   },\n";
-			}
-			else
-			{
-				fTableSource << "   }\n";
-			}
-		}
-	}
-	fTableSource << "};\n\n";
-
 	fTableSource << "const bool "<< sTableName << "::s_canEarlyAnnounce[" << sTableName << "::kInnerStates] = {";
 	index = 0;
 	for (itDVM = m_stateData.begin(); itDVM != m_stateData.end(); itDVM++)
@@ -861,6 +845,102 @@ void CLexerGenerator::Export()
 	fTableSource << "}\n\n";
 	fTableSource << "int " << sTableName << "::GetTransition(int state, int nInnerState, char c)\n";
 	fTableSource << "{\n";
-	fTableSource << "   return s_transitionData[s_dataOffsets[state]+ nInnerState][c];\n";
+	fTableSource << "   switch(s_dataOffsets[state]+ nInnerState)\n";
+	fTableSource << "   {\n";
+	index = 0;
+	for (itDVM = m_stateData.begin(); itDVM != m_stateData.end(); itDVM++)
+	{
+		int stateNumber = 0;
+		STATEDATAVECTOR &dv = itDVM->second;
+		for (auto itDV = dv.begin(); itDV != dv.end(); itDV++)
+		{
+			fTableSource << "   case " << index << ":";
+			if (m_stateData.size() > 1) {
+				fTableSource << " //" << DecipherString(itDVM->first) << " + " << stateNumber;
+			}
+			fTableSource<< "\n";
+
+			std::map<int, std::vector<int>> destinations;
+
+			int *transitions = itDV->m_transitions;
+			for (int transition = 0; transition < 128; transition ++)
+			{
+				auto dest = transitions[transition];
+				destinations[dest].push_back(transition);
+			}
+
+			std::vector<std::pair<int, std::vector<int>>> sorted_destinations;
+			for(auto a: destinations) {
+				sorted_destinations.push_back(a);
+			}
+
+			std::sort(sorted_destinations.begin(), sorted_destinations.end(), [](auto a, auto b) -> bool {return a.second.size() < b.second.size();});
+
+			int item = 0;
+			
+			std::set<int> used;
+			for(int destination = 0; destination < sorted_destinations.size(); destination ++) {
+				auto kvp = sorted_destinations[destination];
+
+				item ++;
+				if (item == sorted_destinations.size()) {
+					fTableSource << "      return " << kvp.first << ";\n";
+				} else {
+					int from = -1;
+					int prev = -1;
+					bool bFirstPredicate = true;
+					for(auto c:kvp.second) {
+						if (from == -1) {
+							from = c;
+						} else {
+							bool foundBreak = false;
+							for(int x = prev + 1; x < c; x++) {
+								if(used.find(x) == used.end()) {
+									foundBreak = true;
+									break;
+								}
+							}
+
+							if (foundBreak) {
+								if (bFirstPredicate == true) {
+									bFirstPredicate = false;
+									fTableSource << "      if (";
+								} else {
+									fTableSource << "       || ";
+								}
+								if (from == prev) {
+									fTableSource << "(c == " << GetCharExport(from) << ")\n";
+								} else {
+									fTableSource << "(c >= " << GetCharExport(from) << " && c <= " << GetCharExport(prev) << ")\n";
+								}
+								from = c;
+							}
+						}
+						prev = c;
+						used.insert(c);
+					}
+
+					if (bFirstPredicate == true) {
+						bFirstPredicate = false;
+						fTableSource << "      if (";
+					} else {
+						fTableSource << "       || ";
+					}
+					if (from == prev) {
+						fTableSource << "(c == " << GetCharExport(from) << ")";
+					} else {
+						fTableSource << "(c >= " << GetCharExport(from) << " && c <= " << GetCharExport(prev) << ")";
+					}
+					fTableSource << ") return " << kvp.first << ";\n";
+				}
+			}
+
+
+			index++;
+			stateNumber ++;
+		}
+	}
+
+	fTableSource << "   }\n";
 	fTableSource << "}\n";
 }

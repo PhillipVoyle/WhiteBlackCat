@@ -85,6 +85,7 @@ class CLexerGenerator
 	static std::string DecipherString(const std::string& s);
 	bool ReadVariable(const std::string& vName, std::string& vValue);
 	static void PrintBanner(std::ostream& s, std::string& fname);
+	static std::string GetCharExport(int c);
 public:
 	CLexerGenerator();
 	virtual ~CLexerGenerator() {}
